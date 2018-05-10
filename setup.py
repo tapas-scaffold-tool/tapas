@@ -20,6 +20,9 @@ setup(
     ],
     keywords='scaffold build generator generate',
     python_requires='>=3',
+    install_requires=[
+        'click>=6.7',
+    ],
     packages=[
         'tapas'
     ],
