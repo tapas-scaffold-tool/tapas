@@ -22,6 +22,7 @@ setup(
     python_requires='>=3',
     install_requires=[
         'click>=6.7',
+        'Jinja2>=2.10',
     ],
     packages=[
         'tapas'
