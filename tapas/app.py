@@ -10,6 +10,7 @@ from gitsnapshot import load_repo
 from appdirs import user_cache_dir
 
 from tapas.context import ContextHolder, PromptMode
+from tapas.schema import TapaSchema, parse_schema
 
 
 TAPA_FILE = 'tapa.py'
@@ -27,14 +28,27 @@ UTF_8 = utf_8.getregentry().name
 
 
 @click.command()
-@click.option('--target', '-t', default=None, help='Target directory')
 @click.option('--params', '-p', type=str, default=None, help='Parameters json')
-@click.argument('tapa')
-def main(tapa, target, params):
-    if target is None:
-        target = os.getcwd()
+@click.option('--force', '-f', is_flag=True, default=False, help='Rewrite files in target directory')
+@click.argument('tapa', type=str)
+@click.argument('target', type=str, default='.')
+def main(tapa, target, params, force):
+    schema, name = parse_schema(tapa)
 
-    tapa_dir = _get_tapa_dir(tapa)
+    if schema is TapaSchema.INDEX:
+        schema, name = _get_tapa_from_index(name)
+
+    if name is None:
+        print('Unknown tapa "{}"'.format(tapa))
+        return 1
+
+    if schema is TapaSchema.DIRECTORY:
+        tapa_dir = _get_path(name)
+    elif schema is TapaSchema.GITHUB:
+        tapa_dir = _resolve_tapa_dir_from_github(name)
+    else:
+        raise NotImplementedError('Not implemented for {}'.format(schema))
+
     if tapa_dir is None:
         print('Unknown tapa name {}'.format(tapa))
         return 1
@@ -50,7 +64,7 @@ def main(tapa, target, params):
 
     params = ContextHolder.CONTEXT.dict
 
-    code = _walk(tapa_dir / TEMPLATE_DIR, target_dir, params)
+    code = _walk(tapa_dir / TEMPLATE_DIR, target_dir, params, force)
     if code:
         return code
 
@@ -65,7 +79,7 @@ def main(tapa, target, params):
     return code
 
 
-def _walk(template_dir: Path, destination_dir: Path, params: dict) -> int:
+def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
     if not template_dir.exists():
         return 1
 
@@ -80,6 +94,9 @@ def _walk(template_dir: Path, destination_dir: Path, params: dict) -> int:
             rendered.mkdir(parents=True, exist_ok=True)
         elif child.is_file():
             content = env.from_string(child.read_text(encoding=UTF_8)).render(params)
+            if rendered.exists() and not force:
+                print('File {} exists. Aborting.'.format(rendered))
+                return 1
             rendered.write_text(content, encoding=UTF_8)
         else:
             raise NotImplementedError()
@@ -111,17 +128,21 @@ def _json_string_to_dict(json_string: Optional[str]) -> dict:
         return json.loads(json_string)
 
 
-def _get_tapa_dir(tapa_name: str) -> Optional[Path]:
-    repo = _get_tapa_repo_by_name(tapa_name)
-    if repo is not None:
-        repo_dir = CACHE_DIR / 'repos' / tapa_name
-        load_repo(repo_dir, repo, use_existing=True)
-        return repo_dir
+def _resolve_tapa_dir_from_github(repo_name: str) -> Optional[Path]:
+    repo = 'https://github.com/' + repo_name
+    parts = repo_name.split('/')
+    repo_dir = (CACHE_DIR / 'repos-github').joinpath(*parts)
+    load_repo(repo_dir, repo, use_existing=True)
+    return repo_dir
 
 
-def _get_tapa_repo_by_name(tapa_name: str) -> Optional[str]:
+def _get_tapa_from_index(name: str) -> Tuple[Optional[TapaSchema], Optional[str]]:
     index = _load_tapas_index()
-    return index.get(tapa_name)
+    value = index.get(name)
+    if value:
+        return parse_schema(value)
+    else:
+        return None, None
 
 
 def _load_tapas_index() -> Dict[str, str]:

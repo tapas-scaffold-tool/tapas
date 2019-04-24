@@ -38,7 +38,7 @@ class MainTest(TestCase):
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', str(tapa), '-t', target],
+                ['tapas', 'dir:{}'.format(str(tapa)), target],
                 input=pass_to_process('directory name', 'file name', 'value')
             )
 
@@ -61,7 +61,7 @@ class MainTest(TestCase):
         tapa = test_tapas_dir() / 'post_init_script'
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', str(tapa), '-t', target])
+            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target],)
 
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
@@ -77,7 +77,7 @@ class MainTest(TestCase):
         tapa = test_tapas_dir() / 'params'
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', str(tapa), '-t', target, '-p', '"{"a": {"b": 1, "c": "Test string!"}}"'])
+            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '"{"a": {"b": 1, "c": "Test string!"}}"'])
 
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
@@ -92,7 +92,7 @@ class MainTest(TestCase):
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', str(tapa), '-t', target, '-p', '"{"a": {"b": 1}}"'],
+                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '"{"a": {"b": 1}}"'],
                 input=pass_to_process('Test string!')
             )
 
