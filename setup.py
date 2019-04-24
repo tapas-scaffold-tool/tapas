@@ -24,6 +24,8 @@ setup(
         'click>=6.7',
         'Jinja2>=2.10',
         'gitsnapshot>=0.1.0',
+        'appdirs',
+        'pyyaml',
     ],
     packages=[
         'tapas'
