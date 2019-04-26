@@ -11,7 +11,7 @@ class TapaSchema(Enum):
     GH = 3
 
 
-SCHEMA_PATTERN = '^(' + '|'.join(map(str.lower, TapaSchema.__members__.keys()))+ '):.+$'
+SCHEMA_PATTERN = '^(' + '|'.join(map(str.lower, TapaSchema.__members__.keys())) + '):.+$'
 
 
 def parse_schema(value: str) -> Tuple[TapaSchema, str]:

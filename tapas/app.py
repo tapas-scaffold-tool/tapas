@@ -36,8 +36,10 @@ def _load_version():
 
 @click.command()
 @click.version_option(version=_load_version(), message='%(version)s')
-@click.option('--params', '-p', type=str, default=None, help='Parameters json', metavar='<json>')
-@click.option('--force', '-f', is_flag=True, default=False, help='Rewrite files in target directory')
+@click.option('--params', '-p', type=str, default=None, help='Parameters json',
+              metavar='<json>')
+@click.option('--force', '-f', is_flag=True, default=False,
+              help='Rewrite files in target directory')
 @click.argument('tapa', type=str)
 @click.argument('target', type=str, default='.')
 def main(tapa, target, params, force):

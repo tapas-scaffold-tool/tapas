@@ -92,7 +92,9 @@ class MainTest(TestCase):
         tapa = test_tapas_dir() / 'params'
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1, "c": "Test string!"}}'])
+            code, out, err = communicate(
+                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1, "c": "Test string!"}}']
+            )
 
             if len(err) != 0:
                 print(err)
@@ -138,7 +140,3 @@ class TempDirectory:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.clean:
             rmtree(self.dir, ignore_errors=True)
-
-
-
-

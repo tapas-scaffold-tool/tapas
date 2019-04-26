@@ -53,10 +53,3 @@ def _user_input(var_name: str, prompt_string: str, default_value: Any):
             prompt_string = 'Enter {} value: '.format(var_name)
 
     return input(prompt_string)
-
-
-
-
-
-
-
