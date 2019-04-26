@@ -36,13 +36,18 @@ setup(
     install_requires=[
         'click~=7.0',
         'Jinja2~=2.10',
-        'gitsnapshot~=0.1.0',
+        'gitsnapshot~=0.1.1',
         'appdirs~=1.4.3',
         'PyYAML~=5.1',
     ],
     packages=[
         'tapas'
     ],
+    package_data={
+        'tapas': [
+            'tapas.version',
+        ]
+    },
     entry_points={
         'console_scripts': [
             'tapas=tapas.app:main',

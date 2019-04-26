@@ -1,9 +1,11 @@
+from typing import Any
 import sys
 from unittest import TestCase
 from tempfile import mkdtemp
 from shutil import rmtree
 from subprocess import Popen, TimeoutExpired, PIPE
 from pathlib import Path
+from encodings import utf_8
 
 
 def communicate(*args, input=None, timeout=60):
@@ -16,12 +18,19 @@ def communicate(*args, input=None, timeout=60):
 
     code = proc.poll()
 
-    return code, outs, errs
+    return code, outs.decode(get_encoding(sys.stdout)), errs.decode(get_encoding(sys.stderr))
+
+
+def get_encoding(arg: Any):
+    if arg.encoding is not None:
+        return arg.encoding
+    else:
+        return utf_8.getregentry().name
 
 
 def pass_to_process(*args) -> bytes:
     input_string = '\n'.join(args) + '\n'
-    return input_string.encode(sys.stdin.encoding)
+    return input_string.encode(get_encoding(sys.stdin))
 
 
 def project_root() -> Path:
@@ -42,6 +51,9 @@ class MainTest(TestCase):
                 input=pass_to_process('directory name', 'file name', 'value')
             )
 
+            if len(err) != 0:
+                print(err)
+
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
 
@@ -61,7 +73,10 @@ class MainTest(TestCase):
         tapa = test_tapas_dir() / 'post_init_script'
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target],)
+            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target])
+
+            if len(err) != 0:
+                print(err)
 
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
@@ -77,7 +92,10 @@ class MainTest(TestCase):
         tapa = test_tapas_dir() / 'params'
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '"{"a": {"b": 1, "c": "Test string!"}}"'])
+            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1, "c": "Test string!"}}'])
+
+            if len(err) != 0:
+                print(err)
 
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
@@ -92,9 +110,12 @@ class MainTest(TestCase):
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '"{"a": {"b": 1}}"'],
+                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1}}'],
                 input=pass_to_process('Test string!')
             )
+
+            if len(err) != 0:
+                print(err)
 
             self.assertEqual(0, code, 'Exit code is not zero')
             self.assertEqual(0, len(err), 'Errors occurred')
