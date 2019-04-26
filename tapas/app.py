@@ -3,6 +3,7 @@ import click
 import os
 import json
 import yaml
+import pkg_resources
 from encodings import utf_8
 from pathlib import Path
 from jinja2 import Environment, StrictUndefined
@@ -27,12 +28,20 @@ INDEX_FILE = 'index.yml'
 UTF_8 = utf_8.getregentry().name
 
 
+def _load_version():
+    version = pkg_resources.resource_string('tapas', 'tapas.version')
+    version = version.decode(UTF_8).strip()
+    return version
+
+
 @click.command()
-@click.option('--params', '-p', type=str, default=None, help='Parameters json')
+@click.version_option(version=_load_version(), message='%(version)s')
+@click.option('--params', '-p', type=str, default=None, help='Parameters json', metavar='<json>')
 @click.option('--force', '-f', is_flag=True, default=False, help='Rewrite files in target directory')
 @click.argument('tapa', type=str)
 @click.argument('target', type=str, default='.')
 def main(tapa, target, params, force):
+
     schema, name = parse_schema(tapa)
 
     if schema is TapaSchema.INDEX:
