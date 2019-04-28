@@ -27,4 +27,4 @@ jobs:
         secure: "bcCwAagULj2J0AYt9CD4UETXbDvsPilJh62tglKerOSAxSdDqsDx+2JXr4mLJjaqujzRaaNdzCByx3cxFUnQrbZEeU3I0yhGfude6I9d/Oeb2VUn2ybY8urX5gU/liBnLZqdLV8s6FSwLDvQhfbayV4ZHoB2sNAr3yyvux9oLkRsnLA1IelAPEarnT9lABHBROZlLXfwx0tfEewu4L2xaEQaVkBackz7p8GVnFfL3TUrIB8T/KCFW1C6FEY7yjfobrlRbDOdmFtmj4z6uaY6qXglf868byRWyUP4zBNjDEDQteCN1DQZnzm83lWhwJZvwRYKGXkZFXRPoOOF2TQSDwy3fg/M8BCRGghupfF7lh7Cr1qn8bB8W9fS2k3h3iWNKis4+DPqx7fG7Ou3YYOGmW8xOet24MAMBjDyVJ9tVTSy3+uGymf62p+teOvMXpDYXBdETeqEetjLzCXgOMzobJ3/3b0UsqbjLVUwnV4eFQ+MZWGYlapxKR0kWsAmCP8xlTGX/KMRs1IAW+bdt/V26EdJEo8zaRWl7q5afsYsB5vfvdDZYe15yOZ1dFJsGk70kV7GjICZvvsK3/JDxh/jXgbCJv3DcTvhXD+aN59coqS4NQF630C238QXw4GZWFg02KokjGXB6cT0mvPFZRsKepfaT8k1aKThV8cJC3SWhCc="
       on:
         distributions: sdist bdist_wheel
-        repo: kirillsulim/gitsnapshot
+        repo: tapas-scaffold-tool/tapas
