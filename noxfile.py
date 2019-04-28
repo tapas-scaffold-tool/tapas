@@ -5,7 +5,6 @@ import nox
 def tests(session):
     session.install('.')
     session.install('pytest')
-    session.run('pip', 'list')
     session.run('pytest', 'integration_tests')
 
 
