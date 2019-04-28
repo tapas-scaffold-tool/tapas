@@ -32,7 +32,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    python_requires='~=3.6',
+    python_requires='~=3.5',
     install_requires=[
         'click~=7.0',
         'Jinja2~=2.10',
