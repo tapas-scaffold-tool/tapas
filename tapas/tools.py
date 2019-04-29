@@ -52,4 +52,7 @@ def _user_input(var_name: str, prompt_string: str, default_value: Any):
         else:
             prompt_string = 'Enter {} value: '.format(var_name)
 
-    return input(prompt_string)
+    result = input(prompt_string)
+    if len(result) == 0:
+        result = default_value
+    return result
