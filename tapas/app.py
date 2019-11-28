@@ -4,6 +4,7 @@ import os
 import json
 import yaml
 import pkg_resources
+from inspect import Parameter, signature
 from encodings import utf_8
 from pathlib import Path
 from jinja2 import Environment, StrictUndefined
@@ -64,7 +65,7 @@ def main(tapa, target, params, force):
         print('Unknown tapa name {}'.format(tapa))
         return 1
 
-    target_dir = Path(target)
+    target_dir = Path(target).expanduser().resolve()
 
     ask, post_init = _load_tapa(tapa_dir / TAPA_FILE)
 
@@ -80,9 +81,27 @@ def main(tapa, target, params, force):
         return code
 
     if post_init is not None:
+        sig = signature(post_init)
+
+        post_init_params = {}
+        for param in sig.parameters.values():
+            if param.kind == Parameter.VAR_KEYWORD:
+                post_init_params = params
+                break
+            elif param.kind in [Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY]:
+                if param.name in params:
+                    post_init_params[param.name] = params[param.name]
+                else:
+                    if param.default == Parameter.empty:
+                        raise Exception(
+                            'Post init function can contain only params asked in ask function or with default value'
+                        )
+            else:
+                raise Exception('Post init function can contain only named params and **kwargs')
+
         cwd = os.getcwd()
-        os.chdir(target)
-        code = post_init()
+        os.chdir(target_dir)
+        code = post_init(**post_init_params)
         os.chdir(cwd)
 
     if code is None:

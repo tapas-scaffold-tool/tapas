@@ -127,6 +127,26 @@ class MainTest(TestCase):
 
             self.assertEqual('1\nTest string!', file.read_text(), 'File content mismatch')
 
+    def test_post_init_script_with_parameters(self):
+        tapa = test_tapas_dir() / 'post_init_script_with_parameters'
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"param": "param value", "dict_param": {"a": 1}}'],
+                input=pass_to_process('Test string!')
+            )
+
+            if len(err) != 0:
+                print(err)
+
+            self.assertEqual(0, code, 'Exit code is not zero')
+            self.assertEqual(0, len(err), 'Errors occurred')
+
+            target = Path(target)
+            file = target / 'generated-file.txt'
+
+            self.assertEqual('p=param value,dp.a=1,def=123', file.read_text(), 'File content mismatch')
+
 
 class TempDirectory:
     def __init__(self, clean=True):
