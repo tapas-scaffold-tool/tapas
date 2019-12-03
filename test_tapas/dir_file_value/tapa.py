@@ -1,7 +1,7 @@
-from tapas.tools import prompt
+from tapas.tools import prompt_str
 
 
 def ask():
-    prompt('directory_name')
-    prompt('file_name')
-    prompt('value_in_file')
+    prompt_str('directory_name')
+    prompt_str('file_name')
+    prompt_str('value_in_file')

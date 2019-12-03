@@ -4,6 +4,7 @@ import os
 import json
 import yaml
 import pkg_resources
+from inspect import Parameter, signature
 from encodings import utf_8
 from pathlib import Path
 from jinja2 import Environment, StrictUndefined
@@ -64,7 +65,7 @@ def main(tapa, target, params, force):
         print('Unknown tapa name {}'.format(tapa))
         return 1
 
-    target_dir = Path(target)
+    target_dir = _get_path(target)
 
     ask, post_init = _load_tapa(tapa_dir / TAPA_FILE)
 
@@ -80,9 +81,27 @@ def main(tapa, target, params, force):
         return code
 
     if post_init is not None:
+        sig = signature(post_init)
+
+        post_init_params = {}
+        for param in sig.parameters.values():
+            if param.kind == Parameter.VAR_KEYWORD:
+                post_init_params = params
+                break
+            elif param.kind in [Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY]:
+                if param.name in params:
+                    post_init_params[param.name] = params[param.name]
+                else:
+                    if param.default == Parameter.empty:
+                        raise Exception(
+                            'Post init function can contain only params asked in ask function or with default value'
+                        )
+            else:
+                raise Exception('Post init function can contain only named params and **kwargs')
+
         cwd = os.getcwd()
-        os.chdir(target)
-        code = post_init()
+        os.chdir(target_dir)
+        code = post_init(**post_init_params)
         os.chdir(cwd)
 
     if code is None:
@@ -92,6 +111,7 @@ def main(tapa, target, params, force):
 
 def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
     if not template_dir.exists():
+        print(f'Incorrect tapa. Template dir "{template_dir}" not found.')
         return 1
 
     env = Environment(undefined=StrictUndefined)
@@ -104,7 +124,17 @@ def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) 
         if child.is_dir():
             rendered.mkdir(parents=True, exist_ok=True)
         elif child.is_file():
-            content = env.from_string(child.read_text(encoding=UTF_8)).render(params)
+            # NB: Read such way to save \n in the end of file
+            text = ''
+            with open(child, 'r', encoding=UTF_8) as f:
+                text = ''.join(f.readlines())
+
+            content = env.from_string(text).render(params)
+
+            # NB: Fix \n at the end after rendering
+            if text.endswith('\n'):
+                content += '\n'
+
             if rendered.exists() and not force:
                 print('File {} exists. Aborting.'.format(rendered))
                 return 1
@@ -116,7 +146,7 @@ def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) 
 
 
 def _get_path(path: str) -> Path:
-    return Path(path).resolve().expanduser().absolute()
+    return Path(path).expanduser().resolve().absolute()
 
 
 def _load_tapa(tapa_file_path: Path) -> Tuple[Optional[Callable], Optional[Callable]]:
