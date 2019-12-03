@@ -67,7 +67,7 @@ class MainTest(TestCase):
             self.assertTrue(file.exists(), 'File was not created')
             self.assertTrue(file.is_file(), 'File is not file')
 
-            self.assertEqual('value', file.read_text(), 'File content mismatch')
+            self.assertEqual('value\n', file.read_text(), 'File content mismatch')
 
     def test_post_init_script(self):
         tapa = test_tapas_dir() / 'post_init_script'
@@ -85,8 +85,8 @@ class MainTest(TestCase):
             static_file = target / 'static-file.txt'
             generated_file = target / 'generated-file.txt'
 
-            self.assertEqual('Static text.', static_file.read_text(), 'File content mismatch')
-            self.assertEqual('Generated text.', generated_file.read_text(), 'File content mismatch')
+            self.assertEqual('Static text.\n', static_file.read_text(), 'File content mismatch')
+            self.assertEqual('Generated text.\n', generated_file.read_text(), 'File content mismatch')
 
     def test_params(self):
         tapa = test_tapas_dir() / 'params'
@@ -105,7 +105,7 @@ class MainTest(TestCase):
             target = Path(target)
             file = target / 'file.txt'
 
-            self.assertEqual('1\nTest string!', file.read_text(), 'File content mismatch')
+            self.assertEqual('1\nTest string!\n', file.read_text(), 'File content mismatch')
 
     def test_params_partial(self):
         tapa = test_tapas_dir() / 'params'
@@ -125,7 +125,7 @@ class MainTest(TestCase):
             target = Path(target)
             file = target / 'file.txt'
 
-            self.assertEqual('1\nTest string!', file.read_text(), 'File content mismatch')
+            self.assertEqual('1\nTest string!\n', file.read_text(), 'File content mismatch')
 
     def test_post_init_script_with_parameters(self):
         tapa = test_tapas_dir() / 'post_init_script_with_parameters'
@@ -145,7 +145,7 @@ class MainTest(TestCase):
             target = Path(target)
             file = target / 'generated-file.txt'
 
-            self.assertEqual('p=param value,dp.a=1,def=123', file.read_text(), 'File content mismatch')
+            self.assertEqual('p=param value,dp.a=1,def=123\n', file.read_text(), 'File content mismatch')
 
 
 class TempDirectory:

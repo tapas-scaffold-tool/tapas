@@ -39,6 +39,9 @@ setup(
         'gitsnapshot~=0.1.1',
         'appdirs~=1.4.3',
         'PyYAML~=5.1',
+        'requests~=2.21.0',
+        'GitPython~=3.0.5',
+        'lice==0.5',
     ],
     packages=[
         'tapas'

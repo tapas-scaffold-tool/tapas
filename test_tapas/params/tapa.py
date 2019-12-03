@@ -1,6 +1,6 @@
-from tapas.tools import prompt
+from tapas.tools import prompt_str
 
 
 def ask():
-    prompt('a.b')
-    prompt('a.c')
+    prompt_str('a.b')
+    prompt_str('a.c')
