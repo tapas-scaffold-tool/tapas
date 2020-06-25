@@ -8,6 +8,7 @@ tapas tapa
 
 Link to repository [is here](https://github.com/tapas-scaffold-tool/tapa-tapa).
 
+
 ## Tapa structure
 
 Tapa consists of folowing parts:
@@ -15,11 +16,13 @@ Tapa consists of folowing parts:
 - template directory
 - tapa.py file 
 
+
 ## Jinja
 
 Tapas uses [jinja2 template engine](http://jinja.pocoo.org/).
 Almost everything in template directory can be template.
 You can substitute values into directory names, file names and file content.
+
 
 ## tapa.py structure
 
@@ -28,6 +31,7 @@ Tapas reads two functions from `tapa.py` file:
 - `post_init`
 
 Both functions and even `tapa.py` file are optional.
+
 
 ## ask function
 
@@ -58,6 +62,7 @@ Enter file_name value: def
 Enter value_in_file value: jkl
 ```
 
+
 ### Redefine prompt string
 
 You can define your own prompt string with `prompt_string` parameter:
@@ -80,6 +85,7 @@ What is directory name? abc
 What is file name? def
 And what file content would you like? jkl
 ```
+
 
 ### Default value
 
@@ -106,6 +112,7 @@ Enter value_in_file value: jkl
 
 Default value will be used in case of empty user input.
 
+
 ## post_init function
 
 `post_init` function (if present) will be called after project generation.
@@ -116,10 +123,39 @@ Possible use cases:
 - Init git repository
 - Fine tuning of generated files (e.g. chmod)
 
+
+## Adding license file
+
+To ask license file add following calls to your `tapa.py`:
+
+```python
+from tapas.tools import prompt_license, generate_license_file
+
+
+def ask():
+    prompt_license()
+
+
+def post_init(license: str):
+    generate_license_file(license)
+``` 
+
+It results in next prompt to user:
+
+```
+Add license (afl3 | agpl3 | apache | bsd2 | bsd3 | cc0 | cc_by | cc_by_nc | cc_by_nc_nd | cc_by_nc_sa | cc_by_nd | cc_by_sa | cddl | epl | gpl2 | gpl3 | isc | lgpl | mit | mpl | wtfpl | zlib)? [none]:
+```
+
+And adds `LICENSE` files.
+
+This functions uses [lice](https://github.com/licenses/lice) to generate files.
+
+
 ## Publishing your tapa
 
 Most common place to publish your tapa is github.
 Simply create repository and publish all tapa files in it.
+
 
 ## Adding your tapa to tapas-index
 
@@ -135,6 +171,3 @@ You must use the following format:
  
 Also it is good to add your tapa name and short description into [README.md](https://github.com/tapas-scaffold-tool/tapas-index/blob/master/README.md)
 in the same repository.
-
-
- 

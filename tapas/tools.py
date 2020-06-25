@@ -99,7 +99,7 @@ BOOL_VALUES = TRUE_VALUES.union(FALSE_VALUES)
 
 def prompt_bool(var_name: str, default_value: Any = None, prompt_string: str = None):
     def bool_converter(value: str) -> Tuple[Optional[bool], Optional[str]]:
-        value = value.strip().lower()
+        value = (value or "").strip().lower()
         if value in TRUE_VALUES:
             return True, None
         elif value in FALSE_VALUES:
@@ -114,12 +114,19 @@ def prompt_enum(var_name: str, default_value: str = None, prompt_string: str = N
     validators = []
     if values is not None:
         def validator(x: str):
-            if x.lower() in values:
+            if (x or "").lower() in values:
                 return None
             else:
-                return f'Unknown license type "{x}"'
+                return f'Unknown value "{x}"'
 
         validators.append(validator)
+
+    if prompt_string is None:
+        allowed = ' | '.join(values)
+        if default_value:
+            prompt_string = f'Enter {var_name}, allowed values are ({allowed})? [{default_value}]: '
+        else:
+            prompt_string = f'Enter {var_name}, allowed values are ({allowed}): '
 
     return prompt_str(var_name, default_value, prompt_string, validators)
 
