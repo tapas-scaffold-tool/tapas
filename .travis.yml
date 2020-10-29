@@ -24,7 +24,7 @@ jobs:
     before_deploy:
       - git config --local user.name "Bender Rodriguez"
       - git config --local user.email "ksbenderbot@ya.ru"
-      - git tag $(cat tapas/tapas.version)
+      - git tag $(cat tapas/tapas.version) --force
     deploy:
     - provider: pypi
       user: "__token__"
