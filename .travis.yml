@@ -23,13 +23,13 @@ jobs:
   include:
   - stage: test
   - stage: deploy
-    python: '3.7'
+    python: '3.9'
     script: skip
     deploy:
       provider: pypi
-      user: kirillsulim
+      user: "__token__"
       password:
-        secure: "bcCwAagULj2J0AYt9CD4UETXbDvsPilJh62tglKerOSAxSdDqsDx+2JXr4mLJjaqujzRaaNdzCByx3cxFUnQrbZEeU3I0yhGfude6I9d/Oeb2VUn2ybY8urX5gU/liBnLZqdLV8s6FSwLDvQhfbayV4ZHoB2sNAr3yyvux9oLkRsnLA1IelAPEarnT9lABHBROZlLXfwx0tfEewu4L2xaEQaVkBackz7p8GVnFfL3TUrIB8T/KCFW1C6FEY7yjfobrlRbDOdmFtmj4z6uaY6qXglf868byRWyUP4zBNjDEDQteCN1DQZnzm83lWhwJZvwRYKGXkZFXRPoOOF2TQSDwy3fg/M8BCRGghupfF7lh7Cr1qn8bB8W9fS2k3h3iWNKis4+DPqx7fG7Ou3YYOGmW8xOet24MAMBjDyVJ9tVTSy3+uGymf62p+teOvMXpDYXBdETeqEetjLzCXgOMzobJ3/3b0UsqbjLVUwnV4eFQ+MZWGYlapxKR0kWsAmCP8xlTGX/KMRs1IAW+bdt/V26EdJEo8zaRWl7q5afsYsB5vfvdDZYe15yOZ1dFJsGk70kV7GjICZvvsK3/JDxh/jXgbCJv3DcTvhXD+aN59coqS4NQF630C238QXw4GZWFg02KokjGXB6cT0mvPFZRsKepfaT8k1aKThV8cJC3SWhCc="
+        secure: "G+RBbwxWghIghIXGRR2Rf1VDYIs1ajyDVesqgrL8jyGP0I6w1FG+rlKoUPXS3KnA/o09KbE5AKYVAID1NYYSrXA2uMt5uMpEqYh99PuUrn+0kDNWfOWjhuDXaKbNM6EuX2NbZfg/W8/uakV6j88v1DQK1WZuFCi3wC6fGfIP/NdKAV+zBBg00z6LlRZIsU0CGwInBitxZ0tZTaIoH4JQoqpiYA9Y3QfiBAWLuZ0hoN9mt4PK6suioJx+XUmVUlT68TKI1fA29v0NLaqf+YYFdT6PRU51Ds/TPaAV7bljPE7wCSkeDPQ3ozA75FxDUV0pLrAszcJpozbUFJdRvVx8CHWUN2zUfUfMljrTSEARqm+9FUnkzEtRGRcgvpZYsMAbGmLqbDHJD1JaaXYj4TDUOG+Sy/Vju2FpA3RTSLqtEitsMtSdXGGXFOmU1BwDpV7b/38qWzBwq7NQ723MZaFZxV55RQPQ9GT/JYaP/MNLe53RZ0hbisGJ7SEplnTvYgxt+plTuiapW8ydZNWyOQAZXhMtfWGvJF7JqCpEzP/Uo3eZoH21TageMs4HfL2ajK4W6S2OyxcEM9YNCyYExptJcm1+isIm0i0CZ1ZcKqauhUguzs2mXyqBCvgzitPyJKB7m7JR3/uG7CgXYWwHK3lY44X++ZB/CEOGvs2VeIvvazE="
       on:
         distributions: sdist bdist_wheel
         repo: tapas-scaffold-tool/tapas
