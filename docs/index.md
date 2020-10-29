@@ -20,7 +20,7 @@ pip install tapas
 Call tapas with tapa name in target directory and enter requested parameters in command line.
 
 ```
-tapas <tapa-name>
+tapas {tapa-name}
 ```
 
 Tapas use tapas-index, stored in [GitHub repository](https://github.com/tapas-scaffold-tool/tapas-index)
@@ -44,7 +44,7 @@ Where `tapa-source-type` is one of:
 If you want to generate project in specific directory pass this directory as second argument:
 
 ```
-tapas <template-name> <target-directory>
+tapas {template-name} {target-directory}
 ```
 
 If target directory does not exist it will be created.

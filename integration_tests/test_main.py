@@ -29,7 +29,7 @@ def get_encoding(arg: Any):
 
 
 def pass_to_process(*args) -> bytes:
-    input_string = '\n'.join(args) + '\n'
+    input_string = "\n".join(args) + "\n"
     return input_string.encode(get_encoding(sys.stdin))
 
 
@@ -38,114 +38,114 @@ def project_root() -> Path:
 
 
 def test_tapas_dir() -> Path:
-    return project_root() / 'test_tapas'
+    return project_root() / "test_tapas"
 
 
 class MainTest(TestCase):
     def test_dir_file_value(self):
-        tapa = test_tapas_dir() / 'dir_file_value'
+        tapa = test_tapas_dir() / "dir_file_value"
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', 'dir:{}'.format(str(tapa)), target],
-                input=pass_to_process('directory name', 'file name', 'value')
+                ["tapas", "dir:{}".format(str(tapa)), target],
+                input=pass_to_process("directory name", "file name", "value"),
             )
 
             if len(err) != 0:
                 print(err)
 
-            self.assertEqual(0, code, 'Exit code is not zero')
-            self.assertEqual(0, len(err), 'Errors occurred')
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
 
             target = Path(target)
-            directory = target / 'directory name'
-            file = directory / 'file name.txt'
+            directory = target / "directory name"
+            file = directory / "file name.txt"
 
-            self.assertTrue(directory.exists(), 'Directory was not created')
-            self.assertTrue(directory.is_dir(), 'Directory is not directory')
+            self.assertTrue(directory.exists(), "Directory was not created")
+            self.assertTrue(directory.is_dir(), "Directory is not directory")
 
-            self.assertTrue(file.exists(), 'File was not created')
-            self.assertTrue(file.is_file(), 'File is not file')
+            self.assertTrue(file.exists(), "File was not created")
+            self.assertTrue(file.is_file(), "File is not file")
 
-            self.assertEqual('value\n', file.read_text(), 'File content mismatch')
+            self.assertEqual("value\n", file.read_text(), "File content mismatch")
 
     def test_post_init_script(self):
-        tapa = test_tapas_dir() / 'post_init_script'
+        tapa = test_tapas_dir() / "post_init_script"
 
         with TempDirectory() as target:
-            code, out, err = communicate(['tapas', 'dir:{}'.format(str(tapa)), target])
+            code, out, err = communicate(["tapas", "dir:{}".format(str(tapa)), target])
 
             if len(err) != 0:
                 print(err)
 
-            self.assertEqual(0, code, 'Exit code is not zero')
-            self.assertEqual(0, len(err), 'Errors occurred')
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
 
             target = Path(target)
-            static_file = target / 'static-file.txt'
-            generated_file = target / 'generated-file.txt'
+            static_file = target / "static-file.txt"
+            generated_file = target / "generated-file.txt"
 
-            self.assertEqual('Static text.\n', static_file.read_text(), 'File content mismatch')
-            self.assertEqual('Generated text.\n', generated_file.read_text(), 'File content mismatch')
+            self.assertEqual("Static text.\n", static_file.read_text(), "File content mismatch")
+            self.assertEqual("Generated text.\n", generated_file.read_text(), "File content mismatch")
 
     def test_params(self):
-        tapa = test_tapas_dir() / 'params'
+        tapa = test_tapas_dir() / "params"
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1, "c": "Test string!"}}']
+                ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"a": {"b": 1, "c": "Test string!"}}']
             )
 
             if len(err) != 0:
                 print(err)
 
-            self.assertEqual(0, code, 'Exit code is not zero')
-            self.assertEqual(0, len(err), 'Errors occurred')
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
 
             target = Path(target)
-            file = target / 'file.txt'
+            file = target / "file.txt"
 
-            self.assertEqual('1\nTest string!\n', file.read_text(), 'File content mismatch')
+            self.assertEqual("1\nTest string!\n", file.read_text(), "File content mismatch")
 
     def test_params_partial(self):
-        tapa = test_tapas_dir() / 'params'
+        tapa = test_tapas_dir() / "params"
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"a": {"b": 1}}'],
-                input=pass_to_process('Test string!')
+                ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"a": {"b": 1}}'],
+                input=pass_to_process("Test string!"),
             )
 
             if len(err) != 0:
                 print(err)
 
-            self.assertEqual(0, code, 'Exit code is not zero')
-            self.assertEqual(0, len(err), 'Errors occurred')
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
 
             target = Path(target)
-            file = target / 'file.txt'
+            file = target / "file.txt"
 
-            self.assertEqual('1\nTest string!\n', file.read_text(), 'File content mismatch')
+            self.assertEqual("1\nTest string!\n", file.read_text(), "File content mismatch")
 
     def test_post_init_script_with_parameters(self):
-        tapa = test_tapas_dir() / 'post_init_script_with_parameters'
+        tapa = test_tapas_dir() / "post_init_script_with_parameters"
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ['tapas', 'dir:{}'.format(str(tapa)), target, '-p', '{"param": "param value", "dict_param": {"a": 1}}'],
-                input=pass_to_process('Test string!')
+                ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"param": "param value", "dict_param": {"a": 1}}'],
+                input=pass_to_process("Test string!"),
             )
 
             if len(err) != 0:
                 print(err)
 
-            self.assertEqual(0, code, 'Exit code is not zero')
-            self.assertEqual(0, len(err), 'Errors occurred')
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
 
             target = Path(target)
-            file = target / 'generated-file.txt'
+            file = target / "generated-file.txt"
 
-            self.assertEqual('p=param value,dp.a=1,def=123\n', file.read_text(), 'File content mismatch')
+            self.assertEqual("p=param value,dp.a=1,def=123\n", file.read_text(), "File content mismatch")
 
 
 class TempDirectory:

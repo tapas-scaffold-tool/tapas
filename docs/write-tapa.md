@@ -166,7 +166,9 @@ in [tapas-index repository](https://github.com/tapas-scaffold-tool/tapas-index).
 You must use the following format:
 
 ```yaml
-<desired-tapa-name>: github:<login-or-organisation>/<repository-name>
+{desired-tapa-name}:
+  repository: github:{login-or-organisation}/{repository-name}
+  description: Add here short description of what your tapa do
 ```
  
 Also it is good to add your tapa name and short description into [README.md](https://github.com/tapas-scaffold-tool/tapas-index/blob/master/README.md)
