@@ -15,7 +15,7 @@ class Context:
         self.dict = values
 
     def put(self, key: str, value: str):
-        parts = key.split('.')
+        parts = key.split(".")
         cur_dict = self.dict
         for part in parts[:-1]:
             if part not in cur_dict:
@@ -24,7 +24,7 @@ class Context:
         cur_dict[parts[-1]] = value
 
     def get(self, key: str) -> Any:
-        parts = key.split('.')
+        parts = key.split(".")
         cur_value = self.dict
         for part in parts:
             if part not in cur_value:

@@ -11,12 +11,12 @@ class TapaSchema(Enum):
     GH = 3
 
 
-SCHEMA_PATTERN = '^(' + '|'.join(map(str.lower, TapaSchema.__members__.keys())) + '):.+$'
+SCHEMA_PATTERN = "^(" + "|".join(map(str.lower, TapaSchema.__members__.keys())) + "):.+$"
 
 
 def parse_schema(value: str) -> Tuple[TapaSchema, str]:
     if re.match(SCHEMA_PATTERN, value):
-        schema, name = tuple(value.split(':', maxsplit=1))
+        schema, name = tuple(value.split(":", maxsplit=1))
         schema = TapaSchema[schema.upper()]
         return schema, name
     else:
