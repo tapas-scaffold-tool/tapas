@@ -15,6 +15,10 @@ stages:
 - test
 - name: deploy
   if: branch = master
+before_deploy:
+- git config --local user.name "Bender Rodriguez"
+- git config --local user.email "ksbenderbot@ya.ru"
+- git tag $(cat tapas/tapas.version)
 jobs:
   include:
   - stage: test
