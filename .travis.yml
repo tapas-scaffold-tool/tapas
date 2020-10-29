@@ -35,5 +35,5 @@ jobs:
         repo: tapas-scaffold-tool/tapas
     - provider: releases
       user: ksbenderbot
-      password:
+      github_token:
         secure: "L8lro/ttdT6mWxD0TwTH13PP4WZN3eiH+g8SaAZg4/zYXrrqX9xkVgAaFtryQXkiE8H+0xncRcvK8GhLO4fSv9ZsZVuR13jyi1xK2Lf6RaV4JILoyDFiKU5sW2DQ1C82PNsNC0akmCX6MEJ0/bqErC8iqqdkriUSZ5sneG7JsKSuxU6lIXMTedzCPIvU6RvzlA83y+yQ433MP+Riz3+qbrpJ2F0VeIgcHd+xbXYF3MVsFB53UZEiVzL58hvv1GA782PnzTXXWMZ2qLsA5ISdm9UyhrZelDO92owL3bZ6VfVAJnRbLF9VzjD3BzAFTy1AeSgMfaCu2dsdlddnMIR4QksRd5uaGVz7OthB2VGvulYnbzLW2mPSO2vAxb7t9/o135CybbrbNlL1maSzMMuTyTufC8pbNa1acIv/zHeeiKn50ANdQfJvOcGsIHLOiO1AU/ZWz8qDELty24s0M6Pnxebkg/HL79ZKayTabLvgLoAIkbySkYLrGkFN/Sz0N2xgn3Yvj9rfnXpG/CEvYE6dqUXc6tzGWgjieMHbiGBRUgu+yDm44irwqk+3Ta6AA7Kultpfvs0QhLUpc+DEXjvH/ogr7C5q62RlN2K3GdjNBu8vrwEYm7wDhOiIR4OL1pXlKfu/ssNHB52kf9ijjzgxFBwznpgYOu1iXYxhXpFRmz4="
