@@ -22,9 +22,9 @@ class TapaRecord:
 
 def _get_tapa_from_index(name: str) -> Tuple[Optional[TapaSchema], Optional[str]]:
     index = _load_tapas_index()
-    value = index.get(name)
-    if value:
-        return parse_schema(value)
+    record = index.get(name)
+    if record:
+        return parse_schema(record.repository)
     else:
         return None, None
 
