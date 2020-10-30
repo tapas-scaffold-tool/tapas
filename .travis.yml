@@ -39,3 +39,6 @@ jobs:
       on:
         repo: tapas-scaffold-tool/tapas
       skip_cleanup: true
+branches:
+  only:
+  - master
