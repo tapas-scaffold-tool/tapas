@@ -6,11 +6,13 @@ import pkg_resources
 from inspect import Parameter, signature
 from encodings import utf_8
 from pathlib import Path
+
 from jinja2 import Environment, StrictUndefined
 from gitsnapshot import load_repo
+from tabulate import tabulate
 
 from tapas.context import ContextHolder, PromptMode
-from tapas.index import CACHE_DIR, _get_tapa_from_index
+from tapas.index import CACHE_DIR, _get_tapa_from_index, _load_tapas_index
 from tapas.schema import TapaSchema, parse_schema
 
 
@@ -29,14 +31,30 @@ def _load_version():
     return version
 
 
+def _list(ctx, param, value) -> None:
+    if not value:
+        return
+
+    index = _load_tapas_index()
+    table = []
+    for tapa_key in sorted(index.keys()):
+        table.append([tapa_key, index[tapa_key].description])
+
+    print(tabulate(table, headers=["Tapa name", "Description"]))
+
+    ctx.exit()
+
+
 @click.command()
 @click.version_option(version=_load_version(), message="%(version)s")
+@click.option(
+    "--list", "-l", is_flag=True, default=False, help="Show list of available tapas", callback=_list, is_eager=True
+)
 @click.option("--params", "-p", type=str, default=None, help="Parameters json", metavar="<json>")
 @click.option("--force", "-f", is_flag=True, default=False, help="Rewrite files in target directory")
 @click.argument("tapa", type=str)
 @click.argument("target", type=str, default=".")
-def main(tapa, target, params, force):
-
+def main(tapa, target, params, force, list) -> int:
     schema, name = parse_schema(tapa)
 
     if schema is TapaSchema.INDEX:

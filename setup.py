@@ -41,7 +41,8 @@ setup(
         "PyYAML~=5.1",
         "requests~=2.21.0",
         "GitPython~=3.0.5",
-        "lice==0.5",
+        "lice~=0.5",
+        "tabulate~=0.8.7",
     ],
     packages=["tapas"],
     package_data={
