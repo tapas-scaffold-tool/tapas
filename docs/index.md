@@ -26,7 +26,7 @@ tapas {tapa-name}
 Tapas use tapas-index, stored in [GitHub repository](https://github.com/tapas-scaffold-tool/tapas-index)
 to define tapa source by tapa name.
 
-To show list of available tapas pass `--list` param to tapas:
+To show list of available tapas pass `--list` flag to tapas:
 
 ```shell script
 tapas --list
