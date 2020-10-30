@@ -6,12 +6,18 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Tapas in simple scaffold tool.
-Run `tapas <template-name>` to generate project in current directory.
-Or `tapas <template-name> <directory-name>` in another directory.
+Run `tapas {template-name}` to generate project in current directory.
+Or `tapas {template-name} {directory-name}` in another directory.
 
 ## Templates
 
-List of available template names is available on [special repository](https://github.com/tapas-scaffold-tool/tapas-index).
+To show list of available tapas run:
+
+```shell script
+tapas --list
+```
+
+List of available template is stored in [special repository](https://github.com/tapas-scaffold-tool/tapas-index).
 
 ## Documentation
 
