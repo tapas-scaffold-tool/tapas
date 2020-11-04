@@ -147,6 +147,33 @@ class MainTest(TestCase):
 
             self.assertEqual("p=param value,dp.a=1,def=123\n", file.read_text(), "File content mismatch")
 
+    def test_custom_index_file(self):
+        index_dir = test_tapas_dir() / "custom_index"
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ["tapas", "--index", f"dir:{index_dir}", "test-tapa", target],
+                input=pass_to_process("directory name", "file name", "value"),
+            )
+
+            if len(err) != 0:
+                print(err)
+
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
+
+            target = Path(target)
+            directory = target / "directory name"
+            file = directory / "file name.txt"
+
+            self.assertTrue(directory.exists(), "Directory was not created")
+            self.assertTrue(directory.is_dir(), "Directory is not directory")
+
+            self.assertTrue(file.exists(), "File was not created")
+            self.assertTrue(file.is_file(), "File is not file")
+
+            self.assertEqual("value\n", file.read_text(), "File content mismatch")
+
 
 class TempDirectory:
     def __init__(self, clean=True):
