@@ -9,13 +9,18 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 from jinja2 import Environment, StrictUndefined
-from gitsnapshot import load_repo
 from tabulate import tabulate
 
 from tapas.context import ContextHolder, PromptMode
-from tapas.index import CACHE_DIR, _get_tapa_from_index, _load_tapas_index
-from tapas.schema import TapaSchema, parse_schema
-
+from tapas.index import (
+    find_tapa_in_index,
+    load_tapas_index,
+    TapaSchema,
+    parse_tapa_location,
+    parse_index_location,
+    DEFAULT_INDEX_LOCATION,
+    load_tapa_from_gitthub,
+)
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
@@ -24,6 +29,10 @@ ASK_FUNCTION = "ask"
 POST_INIT_FUNCTION = "post_init"
 
 UTF_8 = utf_8.getregentry().name
+
+
+def parse_path(path: str) -> Path:
+    return Path(path).expanduser().resolve().absolute()
 
 
 class App:
@@ -42,7 +51,7 @@ class App:
         return self._apply_tapa()
 
     def _show_available_tapas(self) -> int:
-        index = _load_tapas_index()
+        index = load_tapas_index(self.index)
         table = []
         for tapa_key in sorted(index.keys()):
             table.append([tapa_key, index[tapa_key].description])
@@ -51,38 +60,26 @@ class App:
         return 0
 
     def _apply_tapa(self) -> int:
-        schema, name = parse_schema(self.tapa)
-
-        if schema is TapaSchema.INDEX:
-            schema, name = _get_tapa_from_index(name)
-
-        if name is None:
-            print('Unknown tapa "{}"'.format(self.tapa))
-            return 1
-
-        if schema is TapaSchema.DIRECTORY:
-            tapa_dir = _get_path(name)
-        elif schema is TapaSchema.GITHUB:
-            tapa_dir = _resolve_tapa_dir_from_github(name)
+        if self.tapa.schema is TapaSchema.INDEX:
+            tapa_dir = find_tapa_in_index(self.index, self.tapa.location)
+            if tapa_dir is None:
+                index_name = "default index" if self.index is DEFAULT_INDEX_LOCATION else f"index {self.index.location}"
+                print(f'Tapa "{self.tapa.location}" not found in {index_name}')
+                return 1
+        elif self.tapa.schema is TapaSchema.GITHUB:
+            tapa_dir = load_tapa_from_gitthub(self.tapa.location)
+        elif self.tapa.schema is TapaSchema.DIRECTORY:
+            tapa_dir = parse_path(self.tapa.location)
         else:
-            raise NotImplementedError("Not implemented for {}".format(schema))
-
-        if tapa_dir is None:
-            print("Unknown tapa name {}".format(self.tapa))
-            return 1
-
-        target_dir = _get_path(self.target)
+            raise NotImplementedError(f"Not implemented for schema {self.tapa.schema}")
 
         ask, post_init = _load_tapa(tapa_dir / TAPA_FILE)
-
         ContextHolder.init_context(prompt_mode=PromptMode.USER, values=_json_string_to_dict(self.params))
-
         if ask is not None:
             ask()
 
         params = ContextHolder.CONTEXT.dict
-
-        code = _walk(tapa_dir / TEMPLATE_DIR, target_dir, params, self.force)
+        code = _walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
         if code:
             return code
 
@@ -106,7 +103,7 @@ class App:
                     raise Exception("Post init function can contain only named params and **kwargs")
 
             cwd = os.getcwd()
-            os.chdir(target_dir)
+            os.chdir(self.target)
             code = post_init(**post_init_params)
             os.chdir(cwd)
 
@@ -125,11 +122,19 @@ class App:
         parser = ArgumentParser()
         parser.add_argument("--version", action="version", version=version)
         parser.add_argument("-l", "--list", action="store_true", help="show list of available tapas and exit")
+        parser.add_argument(
+            "-i",
+            "--index",
+            type=parse_index_location,
+            default=DEFAULT_INDEX_LOCATION,
+            help="custom index",
+            metavar="INDEX",
+        )
         parser.add_argument("-f", "--force", action="store_true", help="rewrite files in target directory")
         parser.add_argument("-p", "--params", type=str, default=None, help="parameters json", metavar="JSON_OBJECT")
-        parser.add_argument("tapa", nargs="?", help="tapa name", metavar="TAPA")
+        parser.add_argument("tapa", type=parse_tapa_location, nargs="?", help="tapa name", metavar="TAPA")
         parser.add_argument(
-            "target", type=Path, default=Path(os.getcwd()), nargs="?", help="target directory", metavar="TARGET"
+            "target", type=parse_path, default=Path(os.getcwd()), nargs="?", help="target directory", metavar="TARGET"
         )
         return parser
 
@@ -170,10 +175,6 @@ def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) 
     return 0
 
 
-def _get_path(path: str) -> Path:
-    return Path(path).expanduser().resolve().absolute()
-
-
 def _load_tapa(tapa_file_path: Path) -> Tuple[Optional[Callable], Optional[Callable]]:
     if not tapa_file_path.exists():
         return None, None
@@ -192,14 +193,6 @@ def _json_string_to_dict(json_string: Optional[str]) -> dict:
         return {}
     else:
         return json.loads(json_string)
-
-
-def _resolve_tapa_dir_from_github(repo_name: str) -> Optional[Path]:
-    repo = "https://github.com/" + repo_name
-    parts = repo_name.split("/")
-    repo_dir = (CACHE_DIR / "repos-github").joinpath(*parts)
-    load_repo(repo_dir, repo, use_existing=True)
-    return repo_dir
 
 
 def main():
