@@ -29,7 +29,7 @@ to define tapa source by tapa name.
 
 To show list of available tapas pass `--list` flag to tapas:
 
-```shell script
+```
 tapas --list
 ```
 
