@@ -163,7 +163,8 @@ def init_git_repo(commit_message: str = "Initial commit"):
     else:
         repo = Repo(".")
     repo.index.add("*")
-    repo.index.add(".gitignore")
+    if Path(".gitignore").exists():
+        repo.index.add(".gitignore")
     repo.index.commit(commit_message)
 
 
