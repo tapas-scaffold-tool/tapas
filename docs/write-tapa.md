@@ -1,6 +1,6 @@
 # How to write your own tapa
 
-A good way to start tapa is generate template with special tapa:
+A good way to start creating your tapa is to generate template with special tapa:
 
 ```
 tapas tapa
@@ -13,8 +13,8 @@ Link to repository [is here](https://github.com/tapas-scaffold-tool/tapa-tapa).
 
 Tapa consists of folowing parts:
 
-- template directory
-- tapa.py file 
+- `template` directory
+- `tapa.py` file
 
 
 ## Jinja

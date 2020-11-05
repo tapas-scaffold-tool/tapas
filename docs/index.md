@@ -15,6 +15,7 @@ To install tapas use pip:
 pip install tapas
 ```
 
+
 ## Simple usage
 
 Call tapas with tapa name in target directory and enter requested parameters in command line.
@@ -32,6 +33,24 @@ To show list of available tapas pass `--list` flag to tapas:
 tapas --list
 ```
 
+
+## Generate project in another directory
+
+If you want to generate project in specific directory pass this directory as second argument:
+
+```
+tapas {template-name} {target-directory}
+```
+
+If target directory does not exist it will be created.
+
+
+## Rewrite files on generation
+
+You can pass flag `--force` (or `-f`) to make tapas rewrite existing files.
+It can be useful when incorrect data was entered.
+
+
 ## Use tapa that is not in index
 
 You can use tapa that is not registered in tapas-index.
@@ -45,20 +64,19 @@ Where `tapa-source-type` is one of:
 - `directory` or `dir` - look for tapa in directory `tapa-source-location` on local machine, usefull for testing
 - `github` or `gh` - look for tapa in `tapa-source-location` repository on github 
 
-## Generate project in another directory
 
-If you want to generate project in specific directory pass this directory as second argument:
+## Use custom index
 
-```
-tapas {template-name} {target-directory}
-```
+You can use custom index file.
+To use custom index you should pass index location to `--index` parameter in following format:
 
-If target directory does not exist it will be created.
+`tapas --index {index-source-type}:{index-source-location} {tapa-name}`
 
-## Rewrite files on generation
+Where `index-source-type` is one of:
 
-You can pass flag `--force` (or `-f`) to make tapas rewrite existing files.
-It can be useful when incorrect data was entered.
+- `directory` or `dir` - look for `index.yml` file in in directory `index-source-location` on local machine
+- `github` or `gh` - look for `index.yml` in `index-source-location` repository on github
+
 
 ## Show version
 
