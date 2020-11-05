@@ -157,14 +157,20 @@ def download_file(src: str, dst: str):
         f.write(resp.text)
 
 
-def init_git_repo(commit_message: str = "Initial commit"):
+def init_git_repo(commit_message: str = "Initial commit", dot_files=None):
+    if dot_files is None:
+        dot_files = [
+           ".gitignore",
+        ]
+
     if not Path(".git").exists():
         repo = Repo.init()
     else:
         repo = Repo(".")
     repo.index.add("*")
-    if Path(".gitignore").exists():
-        repo.index.add(".gitignore")
+    for dot_file in dot_files:
+        if Path(dot_file).exists():
+            repo.index.add(dot_file)
     repo.index.commit(commit_message)
 
 
