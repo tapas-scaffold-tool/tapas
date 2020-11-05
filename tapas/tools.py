@@ -160,7 +160,7 @@ def download_file(src: str, dst: str):
 def init_git_repo(commit_message: str = "Initial commit", dot_files=None):
     if dot_files is None:
         dot_files = [
-           ".gitignore",
+            ".gitignore",
         ]
 
     if not Path(".git").exists():
