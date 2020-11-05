@@ -79,6 +79,8 @@ class App:
             ask()
 
         params = ContextHolder.CONTEXT.dict
+
+        self.target.mkdir(parents=True, exist_ok=True)
         code = _walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
         if code:
             return code
