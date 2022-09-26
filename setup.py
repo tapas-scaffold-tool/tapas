@@ -34,6 +34,7 @@ setup(
     ],
     python_requires="~=3.6",
     install_requires=[
+        "rusty_results~=1.1.1",
         "Jinja2~=2.10",
         "gitsnapshot~=0.1.1",
         "appdirs~=1.4.3",
@@ -42,6 +43,7 @@ setup(
         "GitPython~=3.0.5",
         "lice~=0.5",
         "tabulate~=0.8.7",
+        "markupsafe==2.0.1",  # Fix cannot import name 'soft_unicode' from 'markupsafe'
     ],
     packages=["tapas"],
     package_data={

@@ -1,6 +1,8 @@
-from tapas.tools import prompt_str
+from tapas.params import StrParameter, IntParameter
 
 
-def ask():
-    prompt_str("a.b")
-    prompt_str("a.c")
+def get_params():
+    return [
+        IntParameter("a.b"),
+        StrParameter("a.c"),
+    ]

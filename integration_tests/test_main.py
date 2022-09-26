@@ -3,7 +3,7 @@ import sys
 from unittest import TestCase
 from tempfile import mkdtemp
 from shutil import rmtree
-from subprocess import Popen, TimeoutExpired, PIPE
+from subprocess import Popen, TimeoutExpired, PIPE, run
 from pathlib import Path
 from encodings import utf_8
 
@@ -42,6 +42,14 @@ def test_tapas_dir() -> Path:
 
 
 class MainTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        run(["pip", "install", "."], cwd=project_root(), check=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        run(["pip", "uninstall", "tapas"], cwd=project_root(), check=True)
+
     def test_dir_file_value(self):
         tapa = test_tapas_dir() / "dir_file_value"
 

@@ -16,41 +16,48 @@ Tapa consists of folowing parts:
 - `template` directory
 - `tapa.py` file
 
-
 ## Jinja
 
 Tapas uses [jinja2 template engine](http://jinja.pocoo.org/).
 Almost everything in template directory can be template.
 You can substitute values into directory names, file names and file content.
 
-
 ## tapa.py structure
 
 Tapas reads two functions from `tapa.py` file:
-- `ask`
+- `get_params`
 - `post_init`
 
 Both functions and even `tapa.py` file are optional.
 
+## Project generation lifecycle
 
-## ask function
+Project generation lifecycle consists of 5 steps:
 
-`ask` function will be called after `tapa.py` file loading.
-The main goal of this function is to collect variable values to for template engine.
-To request value from user call `prompt` from `tapas.tools` module: 
-This functions expect user input or input via `--params` json object.
-If parameter was set by `params` json object, function will use this value and will not ask user value.
+1. Read `tapa.py` file.
+2. Collect project params from `get_params` function if present.
+3. Ask for params from user to build environment.
+4. Generate files with `template` directory.
+5. Call `post_init` function if present.
+6. Call tapas system actions (e.g. generating license, init git repository etc.).
+
+## get_params function
+
+`get_params` function must return list of parameter descriptions. 
 
 Setup example:
+
 
 ```python
 from tapas.tools import prompt
 
 
-def ask():
-    prompt('directory_name')
+def build_env() -> Dict:
+    env = {}
+    env['directory_name'] = prompt('Enter directory name')
     prompt('file_name')
     prompt('value_in_file')
+    return env
 ``` 
  
 Output example:
@@ -113,47 +120,56 @@ Enter value_in_file value: jkl
 Default value will be used in case of empty user input.
 
 
+### Tapas system params
+
+Tapas has some special parameters to pass into returning environment.
+Those parameters can configure common behaviour for many 
+
+```python
+from tapas.tools import (
+    TAPAS_SYSTEM_PARAMS, 
+    TapasSystemParams,
+    prompt_license,
+)
+
+def ask() -> Dict:
+    env = {}
+    env[TAPAS_SYSTEM_PARAMS] = TapasSystemParams(
+        init_git_repo=True,
+        generate_license=prompt_license(),
+        exclude_template_files=[
+            "some_file_to_exclude.txt",
+        ]
+    )
+    return env
+```
+
+- `init_git_repo: bool` - init git repo after generating project
+
+
+### Adding license file
+
+Tapas uses uses [lice](https://github.com/licenses/lice) to generate license file.
+To add license generation add license name as `generate_license` value or call prompt_license() to get one.
+
+```python
+env[TAPAS_SYSTEM_PARAMS] = TapasSystemParams(
+    generate_license=prompt_license(),
+)
+```
+
 ## post_init function
 
-`post_init` function (if present) will be called after project generation.
+`post_init` function (if present) will be called after project generation but before tapas system calls.
 There is no any restriction on what can be in this function.
 
 Possible use cases:
 
-- Init git repository
 - Fine tuning of generated files (e.g. chmod)
-
-
-## Adding license file
-
-To ask license file add following calls to your `tapa.py`:
-
-```python
-from tapas.tools import prompt_license, generate_license_file
-
-
-def ask():
-    prompt_license()
-
-
-def post_init(license: str):
-    generate_license_file(license)
-``` 
-
-It results in next prompt to user:
-
-```
-Add license (afl3 | agpl3 | apache | bsd2 | bsd3 | cc0 | cc_by | cc_by_nc | cc_by_nc_nd | cc_by_nc_sa | cc_by_nd | cc_by_sa | cddl | epl | gpl2 | gpl3 | isc | lgpl | mit | mpl | wtfpl | zlib)? [none]:
-```
-
-And adds `LICENSE` files.
-
-This functions uses [lice](https://github.com/licenses/lice) to generate files.
-
 
 ## Publishing your tapa
 
-Most common place to publish your tapa is github.
+The best place to publish your tapa is github.
 Simply create repository and publish all tapa files in it.
 
 
@@ -163,13 +179,4 @@ To provide possibility to use your tapa via its name you should add record to
 [index.yml](https://github.com/tapas-scaffold-tool/tapas-index/blob/master/index.yml) file
 in [tapas-index repository](https://github.com/tapas-scaffold-tool/tapas-index).
 
-You must use the following format:
-
-```yaml
-{desired-tapa-name}:
-  repository: github:{login-or-organisation}/{repository-name}
-  description: Add here short description of what your tapa do
-```
- 
-Also it is good to add your tapa name and short description into [README.md](https://github.com/tapas-scaffold-tool/tapas-index/blob/master/README.md)
-in the same repository.
+Please check requirements in [contributing section](https://github.com/tapas-scaffold-tool/tapas-index/blob/master/contributing.md).

@@ -1,9 +1,9 @@
-from typing import Tuple, Callable, Optional
+from typing import Optional, List, Dict, Any
 import os
 import sys
 import json
 import pkg_resources
-from inspect import Parameter, signature
+from inspect import signature
 from encodings import utf_8
 from pathlib import Path
 from argparse import ArgumentParser
@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 from jinja2 import Environment, StrictUndefined
 from tabulate import tabulate
 
-from tapas.context import ContextHolder, PromptMode
 from tapas.index import (
     find_tapa_in_index,
     load_tapas_index,
@@ -21,12 +20,14 @@ from tapas.index import (
     DEFAULT_INDEX_LOCATION,
     load_tapa_from_gitthub,
 )
+from tapas.loader import load_tapa
+from tapas.params import (
+    Parameter,
+)
+from tapas.io import PromptProvider, PrintProvider
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
-
-ASK_FUNCTION = "ask"
-POST_INIT_FUNCTION = "post_init"
 
 UTF_8 = utf_8.getregentry().name
 
@@ -73,15 +74,13 @@ class App:
         else:
             raise NotImplementedError(f"Not implemented for schema {self.tapa.schema}")
 
-        ask, post_init = _load_tapa(tapa_dir / TAPA_FILE)
-        ContextHolder.init_context(prompt_mode=PromptMode.USER, values=_json_string_to_dict(self.params))
-        if ask is not None:
-            ask()
+        get_params, post_init = load_tapa(tapa_dir / TAPA_FILE)
+        tapa_params = get_params()
 
-        params = ContextHolder.CONTEXT.dict
+
 
         self.target.mkdir(parents=True, exist_ok=True)
-        code = _walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
+        code = walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
         if code:
             return code
 
@@ -113,6 +112,8 @@ class App:
             code = 0
         return code
 
+
+
     @staticmethod
     def _load_version() -> str:
         version = pkg_resources.resource_string("tapas", "tapas.version")
@@ -141,7 +142,7 @@ class App:
         return parser
 
 
-def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
+def walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
     if not template_dir.exists():
         print(f'Incorrect tapa. Template dir "{template_dir}" not found.')
         return 1
@@ -177,17 +178,6 @@ def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) 
     return 0
 
 
-def _load_tapa(tapa_file_path: Path) -> Tuple[Optional[Callable], Optional[Callable]]:
-    if not tapa_file_path.exists():
-        return None, None
-
-    scope = {}
-    exec(tapa_file_path.read_text(encoding="utf-8"), scope)
-
-    ask = scope.get(ASK_FUNCTION, None)
-    post_init = scope.get(POST_INIT_FUNCTION, None)
-
-    return ask, post_init
 
 
 def _json_string_to_dict(json_string: Optional[str]) -> dict:
