@@ -1,3 +1,4 @@
+import json
 from typing import (
     Callable, Optional, TypeVar, Generic, List, Dict, Any
 )
@@ -54,15 +55,25 @@ class ParamReader:
     def read_params(self, params: List[Parameter], json_params: Dict[str, Any]) -> Dict[str, Any]:
         result = {}
         errors = []
+
         for param in params:
-            if param.id in json_params:
-                value = json_params[param.id]
+            json_parts = param.id.split(".")
+            json_value = json_params
+            for part in json_parts:
+                json_value = json_value.get(part)
+                if json_value is None:
+                    break
+
+            print(json_value)
+
+            if json_value is not None:
                 if param.validator:
-                    error = param.validator(value)
+                    error = param.validator(json_value)
                     if error.is_some:
                         errors.append(error.unwrap())
                         continue
-                result[param.id] = value
+                result[param.id] = json_value
+                self.print(f"{param.id} have been read from JSON params: {json_value}")
             elif not errors:
                 prompt_message = param.prompt if param.prompt else f"Enter {param.id}: "
                 while True:
@@ -80,6 +91,8 @@ class ParamReader:
                     break
         return result
 
-
-
+    @staticmethod
+    def parse_json(json_string: str) -> Dict[str, Any]:
+        print(json_string)
+        return json.loads(json_string)
 

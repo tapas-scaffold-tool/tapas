@@ -9,6 +9,7 @@ from encodings import utf_8
 
 
 def communicate(*args, input=None, timeout=60):
+    print(f"Run command: {' '.join(*args)}")
     proc = Popen(*args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     try:
         outs, errs = proc.communicate(input=input, timeout=timeout)
@@ -17,8 +18,15 @@ def communicate(*args, input=None, timeout=60):
         outs, errs = proc.communicate()
 
     code = proc.poll()
+    stdout = outs.decode(get_encoding(sys.stdout))
+    stderr = errs.decode(get_encoding(sys.stderr))
 
-    return code, outs.decode(get_encoding(sys.stdout)), errs.decode(get_encoding(sys.stderr))
+    if len(stdout) != 0:
+        print(stdout)
+    if len(stderr) != 0:
+        print(stderr, file=sys.stderr)
+
+    return code, stdout, stderr
 
 
 def get_encoding(arg: Any):
@@ -59,9 +67,6 @@ class MainTest(TestCase):
                 input=pass_to_process("directory name", "file name", "value"),
             )
 
-            if len(err) != 0:
-                print(err)
-
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")
 
@@ -83,9 +88,6 @@ class MainTest(TestCase):
         with TempDirectory() as target:
             code, out, err = communicate(["tapas", "dir:{}".format(str(tapa)), target])
 
-            if len(err) != 0:
-                print(err)
-
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")
 
@@ -104,9 +106,6 @@ class MainTest(TestCase):
                 ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"a": {"b": 1, "c": "Test string!"}}']
             )
 
-            if len(err) != 0:
-                print(err)
-
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")
 
@@ -124,9 +123,6 @@ class MainTest(TestCase):
                 input=pass_to_process("Test string!"),
             )
 
-            if len(err) != 0:
-                print(err)
-
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")
 
@@ -140,12 +136,9 @@ class MainTest(TestCase):
 
         with TempDirectory() as target:
             code, out, err = communicate(
-                ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"param": "param value", "dict_param": {"a": 1}}'],
+                ["tapas", "dir:{}".format(str(tapa)), target, "-p", '{"param": "param value"}'],
                 input=pass_to_process("Test string!"),
             )
-
-            if len(err) != 0:
-                print(err)
 
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")
@@ -153,7 +146,7 @@ class MainTest(TestCase):
             target = Path(target)
             file = target / "generated-file.txt"
 
-            self.assertEqual("p=param value,dp.a=1,def=123\n", file.read_text(), "File content mismatch")
+            self.assertEqual("p=param value\n", file.read_text(), "File content mismatch")
 
     def test_custom_index_file(self):
         index_dir = test_tapas_dir() / "custom_index"
@@ -163,9 +156,6 @@ class MainTest(TestCase):
                 ["tapas", "--index", f"dir:{index_dir}", "test-tapa", target],
                 input=pass_to_process("directory name", "file name", "value"),
             )
-
-            if len(err) != 0:
-                print(err)
 
             self.assertEqual(0, code, "Exit code is not zero")
             self.assertEqual(0, len(err), "Errors occurred")

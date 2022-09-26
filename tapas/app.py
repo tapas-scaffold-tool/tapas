@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 from jinja2 import Environment, StrictUndefined
 from tabulate import tabulate
 
+from tapas.constants import UTF_8
 from tapas.index import (
     find_tapa_in_index,
     load_tapas_index,
@@ -22,14 +23,15 @@ from tapas.index import (
 )
 from tapas.loader import load_tapa
 from tapas.params import (
-    Parameter,
+    Parameter, ParamReader,
 )
-from tapas.io import PromptProvider, PrintProvider
+from tapas.io import PromptProvider, PrintProvider, ConsolePromptProvider, ConsolePrintProvider
+from tapas.templater import Templater
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
 
-UTF_8 = utf_8.getregentry().name
+
 
 
 def parse_path(path: str) -> Path:
@@ -44,6 +46,17 @@ class App:
 
         if not self.list and self.tapa is None:
             parser.error("Missing tapa name")
+
+        self.prompt_provider = ConsolePromptProvider()
+        self.print_provider = ConsolePrintProvider()
+
+        self.param_reader = ParamReader(
+            self.prompt_provider,
+            self.print_provider,
+        )
+        self.templater = Templater(
+            self.print_provider
+        )
 
     def run(self) -> int:
         if self.list:
@@ -61,6 +74,7 @@ class App:
         return 0
 
     def _apply_tapa(self) -> int:
+        self.print_provider.print("Hi")
         if self.tapa.schema is TapaSchema.INDEX:
             tapa_dir = find_tapa_in_index(self.index, self.tapa.location)
             if tapa_dir is None:
@@ -75,44 +89,24 @@ class App:
             raise NotImplementedError(f"Not implemented for schema {self.tapa.schema}")
 
         get_params, post_init = load_tapa(tapa_dir / TAPA_FILE)
-        tapa_params = get_params()
-
-
+        params_description = get_params() if get_params else {}
+        json_params = self.param_reader.parse_json(self.params) if self.params else {}
+        params = self.param_reader.read_params(params_description, json_params)
 
         self.target.mkdir(parents=True, exist_ok=True)
-        code = walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
+        code = self.templater.walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
         if code:
             return code
 
         if post_init is not None:
-            sig = signature(post_init)
-
-            post_init_params = {}
-            for param in sig.parameters.values():
-                if param.kind == Parameter.VAR_KEYWORD:
-                    post_init_params = params
-                    break
-                elif param.kind in [Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY]:
-                    if param.name in params:
-                        post_init_params[param.name] = params[param.name]
-                    else:
-                        if param.default == Parameter.empty:
-                            raise Exception(
-                                "Post init function can contain only params asked in ask function or with default value"
-                            )
-                else:
-                    raise Exception("Post init function can contain only named params and **kwargs")
-
             cwd = os.getcwd()
             os.chdir(self.target)
-            code = post_init(**post_init_params)
+            code = post_init(params)
             os.chdir(cwd)
 
         if code is None:
             code = 0
         return code
-
-
 
     @staticmethod
     def _load_version() -> str:
@@ -140,51 +134,6 @@ class App:
             "target", type=parse_path, default=Path(os.getcwd()), nargs="?", help="target directory", metavar="TARGET"
         )
         return parser
-
-
-def walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
-    if not template_dir.exists():
-        print(f'Incorrect tapa. Template dir "{template_dir}" not found.')
-        return 1
-
-    env = Environment(undefined=StrictUndefined)
-
-    for child in template_dir.glob("**/*"):
-        relative = child.relative_to(template_dir)
-
-        rendered = destination_dir / Path(*map(lambda p: env.from_string(p).render(params), relative.parts))
-
-        if child.is_dir():
-            rendered.mkdir(parents=True, exist_ok=True)
-        elif child.is_file():
-            # NB: Read such way to save \n in the end of file
-            text = ""
-            with open(child, "r", encoding=UTF_8) as f:
-                text = "".join(f.readlines())
-
-            content = env.from_string(text).render(params)
-
-            # NB: Fix \n at the end after rendering
-            if text.endswith("\n"):
-                content += "\n"
-
-            if rendered.exists() and not force:
-                print("File {} exists. Aborting.".format(rendered))
-                return 1
-            rendered.write_text(content, encoding=UTF_8)
-        else:
-            raise NotImplementedError()
-
-    return 0
-
-
-
-
-def _json_string_to_dict(json_string: Optional[str]) -> dict:
-    if json_string is None:
-        return {}
-    else:
-        return json.loads(json_string)
 
 
 def main():

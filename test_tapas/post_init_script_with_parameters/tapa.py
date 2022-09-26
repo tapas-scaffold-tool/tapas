@@ -1,11 +1,13 @@
-from tapas.tools import prompt_str
+from tapas.params import StrParameter
 
 
-def ask():
-    prompt_str("param", default_value="a simple param")
-    prompt_str("b", default_value="b_param")
+def get_params():
+    return [
+        StrParameter("param"),  # default_value="a simple param"
+        StrParameter("b"),  # default_value="b_param"
+    ]
 
 
-def post_init(param, dict_param, param_with_default=123, **kwargs):
+def post_init(params):
     with open("generated-file.txt", mode="w") as f:
-        f.write(f'p={param},dp.a={dict_param["a"]},def={param_with_default}\n')
+        f.write(f'p={params["param"]}\n')
