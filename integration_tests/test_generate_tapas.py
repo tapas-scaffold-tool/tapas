@@ -1,65 +1,17 @@
-from typing import Any
-import sys
-from unittest import TestCase
-from tempfile import mkdtemp
-from shutil import rmtree
-from subprocess import Popen, TimeoutExpired, PIPE, run
 from pathlib import Path
-from encodings import utf_8
+
+from integration_tests.common import (
+    communicate,
+    pass_to_process,
+    get_test_tapas_dir,
+    TempDirectory,
+    BaseTapasTest,
+)
 
 
-def communicate(*args, input=None, timeout=60):
-    print(f"Run command: {' '.join(*args)}")
-    proc = Popen(*args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    try:
-        outs, errs = proc.communicate(input=input, timeout=timeout)
-    except TimeoutExpired:
-        proc.kill()
-        outs, errs = proc.communicate()
-
-    code = proc.poll()
-    stdout = outs.decode(get_encoding(sys.stdout))
-    stderr = errs.decode(get_encoding(sys.stderr))
-
-    if len(stdout) != 0:
-        print(stdout)
-    if len(stderr) != 0:
-        print(stderr, file=sys.stderr)
-
-    return code, stdout, stderr
-
-
-def get_encoding(arg: Any):
-    if arg.encoding is not None:
-        return arg.encoding
-    else:
-        return utf_8.getregentry().name
-
-
-def pass_to_process(*args) -> bytes:
-    input_string = "\n".join(args) + "\n"
-    return input_string.encode(get_encoding(sys.stdin))
-
-
-def project_root() -> Path:
-    return Path(__file__).parents[1]
-
-
-def test_tapas_dir() -> Path:
-    return project_root() / "test_tapas"
-
-
-class MainTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        run(["pip", "install", "."], cwd=project_root(), check=True)
-
-    @classmethod
-    def tearDownClass(cls):
-        run(["pip", "uninstall", "tapas"], cwd=project_root(), check=True)
-
+class GenerateTapasTest(BaseTapasTest):
     def test_dir_file_value(self):
-        tapa = test_tapas_dir() / "dir_file_value"
+        tapa = get_test_tapas_dir() / "dir_file_value"
 
         with TempDirectory() as target:
             code, out, err = communicate(
@@ -83,7 +35,7 @@ class MainTest(TestCase):
             self.assertEqual("value\n", file.read_text(), "File content mismatch")
 
     def test_post_init_script(self):
-        tapa = test_tapas_dir() / "post_init_script"
+        tapa = get_test_tapas_dir() / "post_init_script"
 
         with TempDirectory() as target:
             code, out, err = communicate(["tapas", "dir:{}".format(str(tapa)), target])
@@ -99,7 +51,7 @@ class MainTest(TestCase):
             self.assertEqual("Generated text.\n", generated_file.read_text(), "File content mismatch")
 
     def test_params(self):
-        tapa = test_tapas_dir() / "params"
+        tapa = get_test_tapas_dir() / "params"
 
         with TempDirectory() as target:
             code, out, err = communicate(
@@ -115,7 +67,7 @@ class MainTest(TestCase):
             self.assertEqual("1\nTest string!\n", file.read_text(), "File content mismatch")
 
     def test_params_partial(self):
-        tapa = test_tapas_dir() / "params"
+        tapa = get_test_tapas_dir() / "params"
 
         with TempDirectory() as target:
             code, out, err = communicate(
@@ -132,7 +84,7 @@ class MainTest(TestCase):
             self.assertEqual("1\nTest string!\n", file.read_text(), "File content mismatch")
 
     def test_post_init_script_with_parameters(self):
-        tapa = test_tapas_dir() / "post_init_script_with_parameters"
+        tapa = get_test_tapas_dir() / "post_init_script_with_parameters"
 
         with TempDirectory() as target:
             code, out, err = communicate(
@@ -149,7 +101,7 @@ class MainTest(TestCase):
             self.assertEqual("p=param value\n", file.read_text(), "File content mismatch")
 
     def test_custom_index_file(self):
-        index_dir = test_tapas_dir() / "custom_index"
+        index_dir = get_test_tapas_dir() / "custom_index"
 
         with TempDirectory() as target:
             code, out, err = communicate(
@@ -171,17 +123,3 @@ class MainTest(TestCase):
             self.assertTrue(file.is_file(), "File is not file")
 
             self.assertEqual("value\n", file.read_text(), "File content mismatch")
-
-
-class TempDirectory:
-    def __init__(self, clean=True):
-        self.dir = None
-        self.clean = clean
-
-    def __enter__(self):
-        self.dir = mkdtemp()
-        return self.dir
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.clean:
-            rmtree(self.dir, ignore_errors=True)

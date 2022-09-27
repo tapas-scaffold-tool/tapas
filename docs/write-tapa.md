@@ -36,7 +36,7 @@ Project generation lifecycle consists of 5 steps:
 
 1. Read `tapa.py` file.
 2. Collect project params from `get_params` function if present.
-3. Ask for params from user to build environment.
+3. Ask for params from user to build environment or load them from `--param` argument.
 4. Generate files with `template` directory.
 5. Call `post_init` function if present.
 6. Call tapas system actions (e.g. generating license, init git repository etc.).
@@ -49,15 +49,15 @@ Setup example:
 
 
 ```python
-from tapas.tools import prompt
+from tapas.params import StrParameter
 
 
-def build_env() -> Dict:
-    env = {}
-    env['directory_name'] = prompt('Enter directory name')
-    prompt('file_name')
-    prompt('value_in_file')
-    return env
+def get_params():
+    return [
+        StrParameter("directory_name"),
+        StrParameter("file_name"),
+        StrParameter("value_in_file"),
+    ]
 ``` 
  
 Output example:
@@ -72,25 +72,23 @@ Enter value_in_file value: jkl
 
 ### Redefine prompt string
 
-You can define your own prompt string with `prompt_string` parameter:
+You can define your own prompt string with `prompt` parameter:
 
 ```python
-from tapas.tools import prompt
+from tapas.params import StrParameter
 
 
-def ask():
-    prompt('directory_name', prompt_string='What is directory name? ')
-    prompt('file_name', prompt_string='What is file name? ')
-    prompt('value_in_file', prompt_string='And what file content would you like? ')
+def get_params():
+    return [
+        StrParameter("param.id", prompt="Please enter parameter value"),
+    ]
 ```
 
 Output example:
 
 ```sh
 su0@tower:~$ tapas test-tapa
-What is directory name? abc
-What is file name? def
-And what file content would you like? jkl
+Please enter parameter value: jkl
 ```
 
 

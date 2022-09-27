@@ -20,11 +20,13 @@ class Parameter(Generic[T]):
         parser: Callable[[str], Result[T, str]],
         validator: Optional[Callable[[T], Some[str]]] = None,
         prompt: Optional[str] = None,
+        default: Optional[T] = None,
     ):
         self.id = id
         self.parser = parser
         self.validator = validator
         self.prompt = prompt
+        self.default = default
 
 
 class IntParameter(Parameter[int]):
@@ -33,8 +35,9 @@ class IntParameter(Parameter[int]):
         id: str,
         validator: Optional[Callable[[T], Some[str]]] = None,
         prompt: Optional[str] = None,
+        default: Optional[int] = None,
     ):
-        super(IntParameter, self).__init__(id, int_parser, validator, prompt)
+        super(IntParameter, self).__init__(id, int_parser, validator, prompt, default)
 
 
 class StrParameter(Parameter[str]):
@@ -43,8 +46,9 @@ class StrParameter(Parameter[str]):
         id: str,
         validator: Optional[Callable[[T], Some[str]]] = None,
         prompt: Optional[str] = None,
+        default: Optional[str] = None,
     ):
-        super(StrParameter, self).__init__(id, str_parser, validator, prompt)
+        super(StrParameter, self).__init__(id, str_parser, validator, prompt, default)
 
 
 class ParamReader:
