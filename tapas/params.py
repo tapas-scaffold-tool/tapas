@@ -28,6 +28,11 @@ class Parameter(Generic[T]):
         self.prompt = prompt
         self.default = default
 
+        if default and validator:
+            error = validator(default)
+            if error.is_some:
+                raise ValueError(f"Default value {default} is invalid: {error.unwrap()}")
+
 
 class IntParameter(Parameter[int]):
     def __init__(
@@ -68,8 +73,6 @@ class ParamReader:
                 if json_value is None:
                     break
 
-            print(json_value)
-
             if json_value is not None:
                 if param.validator:
                     error = param.validator(json_value)
@@ -79,12 +82,18 @@ class ParamReader:
                 result[param.id] = json_value
                 self.print(f"{param.id} have been read from JSON params: {json_value}")
             elif not errors:
-                prompt_message = param.prompt if param.prompt else f"Enter {param.id}: "
+                if param.default:
+                    prompt_message = param.prompt if param.prompt else f"Enter {param.id} [{param.default}]: "
+                else:
+                    prompt_message = param.prompt if param.prompt else f"Enter {param.id}: "
                 while True:
                     user_input = self.prompt(prompt_message)
+                    if not user_input and param.default:
+                        result[param.id] = param.default
+                        break
                     parse_result = param.parser(user_input)
                     if parse_result.is_err:
-                        self.print(f"Failed to parse value {user_input}: {parse_result.unwrap()}")
+                        self.print(f"Failed to parse value {user_input}: {parse_result.unwrap_err()}")
                         continue
                     if param.validator:
                         validation_error = param.validator(parse_result.unwrap())
@@ -97,6 +106,5 @@ class ParamReader:
 
     @staticmethod
     def parse_json(json_string: str) -> Dict[str, Any]:
-        print(json_string)
         return json.loads(json_string)
 

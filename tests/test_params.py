@@ -30,8 +30,21 @@ class TestParamReader(TestCase):
 
         result = param_reader.read_params(
             [StrParameter("test.id")],
-            {"test.id": "test_value"},
+            {"test": {"id": "test_value"}},
         )
 
         prompt.check_no_more_values()
         self.assertDictEqual(result, {"test.id": "test_value"})
+
+    def test_read_params_default_value(self):
+        prompt = ListPromptProvider([""])
+        print = SaveToListPrintProvider()
+        param_reader = ParamReader(prompt, print)
+
+        result = param_reader.read_params(
+            [StrParameter("test.id", default="default")],
+            {},
+        )
+
+        prompt.check_no_more_values()
+        self.assertDictEqual(result, {"test.id": "default"})

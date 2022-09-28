@@ -123,3 +123,43 @@ class GenerateTapasTest(BaseTapasTest):
             self.assertTrue(file.is_file(), "File is not file")
 
             self.assertEqual("value\n", file.read_text(), "File content mismatch")
+
+    def test_default_value(self):
+        tapa = get_test_tapas_dir() / "params_with_default_value"
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ["tapas", "dir:{}".format(str(tapa)), target],
+                input=pass_to_process(""),
+            )
+
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
+
+            target = Path(target)
+            file = target / "file.txt"
+
+            self.assertTrue(file.exists(), "File was not created")
+            self.assertTrue(file.is_file(), "File is not file")
+
+            self.assertEqual("default\n", file.read_text(), "File content mismatch")
+
+    def test_parse_and_validation_error(self):
+        tapa = get_test_tapas_dir() / "params_with_parser_and_validator"
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ["tapas", "dir:{}".format(str(tapa)), target],
+                input=pass_to_process("abc", "-1", "1"),
+            )
+
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
+
+            target = Path(target)
+            file = target / "file.txt"
+
+            self.assertTrue(file.exists(), "File was not created")
+            self.assertTrue(file.is_file(), "File is not file")
+
+            self.assertEqual("1\n", file.read_text(), "File content mismatch")

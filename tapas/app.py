@@ -70,16 +70,15 @@ class App:
         for tapa_key in sorted(index.keys()):
             table.append([tapa_key, index[tapa_key].description])
 
-        print(tabulate(table, headers=["Tapa name", "Description"]))
+        self.print_provider.print(tabulate(table, headers=["Tapa name", "Description"]))
         return 0
 
     def _apply_tapa(self) -> int:
-        self.print_provider.print("Hi")
         if self.tapa.schema is TapaSchema.INDEX:
             tapa_dir = find_tapa_in_index(self.index, self.tapa.location)
             if tapa_dir is None:
                 index_name = "default index" if self.index is DEFAULT_INDEX_LOCATION else f"index {self.index.location}"
-                print(f'Tapa "{self.tapa.location}" not found in {index_name}')
+                self.print_provider.print(f'Tapa "{self.tapa.location}" not found in {index_name}')
                 return 1
         elif self.tapa.schema is TapaSchema.GITHUB:
             tapa_dir = load_tapa_from_gitthub(self.tapa.location)

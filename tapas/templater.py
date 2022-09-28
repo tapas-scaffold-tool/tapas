@@ -33,7 +33,6 @@ class Templater:
                 with open(child, "r", encoding=UTF_8) as f:
                     text = "".join(f.readlines())
 
-                print(params)
                 content = env.from_string(text).render(params)
 
                 # NB: Fix \n at the end after rendering
@@ -41,7 +40,7 @@ class Templater:
                     content += "\n"
 
                 if rendered.exists() and not force:
-                    print("File {} exists. Aborting.".format(rendered))
+                    self.print("File {} exists. Aborting.".format(rendered))
                     return 1
                 rendered.write_text(content, encoding=UTF_8)
             else:
