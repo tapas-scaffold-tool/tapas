@@ -39,19 +39,6 @@ def prompt_license():
     return prompt_enum("license", "none", f"Add license ({allowed})? [none]: ", values)
 
 
-def _user_input(var_name: str, prompt_string: str, default_value: Any):
-    if not prompt_string:
-        if default_value is not None:
-            prompt_string = "Enter {} value [{}]: ".format(var_name, default_value)
-        else:
-            prompt_string = "Enter {} value: ".format(var_name)
-
-    result = input(prompt_string)
-    if len(result) == 0:
-        result = default_value
-    return result
-
-
 def download_file(src: str, dst: str):
     resp = requests.get(src)
     with open(dst, "w") as f:

@@ -1,3 +1,5 @@
+from typing import Callable, List
+
 from rusty_results import Ok, Err, Result
 
 
@@ -33,3 +35,15 @@ def bool_parser(value: str) -> Result[bool, str]:
         return Ok(False)
     else:
         return Err(f"Illegal boolean value {value}. Allowed values are: [{', '.join(BOOL_VALUES)}]")
+
+
+def build_str_enum_parser(values: List[str]) -> Callable[[str], Result[str, str]]:
+    values_lower = {v.lower() for v in values}
+
+    def str_enum_parser(value: str) -> Result[str, str]:
+        if value.lower() in values_lower:
+            return Ok(value.lower())
+        else:
+            return Err(f"Unknown value {value}, allowed values are [{' ,'.join(sorted(values_lower))}]")
+
+    return str_enum_parser

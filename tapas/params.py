@@ -4,7 +4,7 @@ from typing import Callable, Optional, TypeVar, Generic, List, Dict, Any
 from rusty_results import Some, Result
 
 from tapas.io import PromptProvider, PrintProvider
-from tapas.parsers import int_parser, str_parser
+from tapas.parsers import int_parser, str_parser, bool_parser, build_str_enum_parser
 
 T = TypeVar("T")
 
@@ -45,11 +45,34 @@ class StrParameter(Parameter[str]):
     def __init__(
         self,
         id: str,
-        validator: Optional[Callable[[T], Some[str]]] = None,
+        validator: Optional[Callable[[str], Some[str]]] = None,
         prompt: Optional[str] = None,
         default: Optional[str] = None,
     ):
         super(StrParameter, self).__init__(id, str_parser, validator, prompt, default)
+
+
+class BoolParameter(Parameter[bool]):
+    def __init__(
+        self,
+        id: str,
+        validator: Optional[Callable[[bool], Some[str]]] = None,
+        prompt: Optional[bool] = None,
+        default: Optional[bool] = None,
+    ):
+        super(BoolParameter, self).__init__(id, bool_parser, validator, prompt, default)
+
+
+class StrEnumParameter(Parameter[str]):
+    def __init__(
+        self,
+        id: str,
+        values: List[str],
+        validator: Optional[Callable[[str], Some[str]]] = None,
+        prompt: Optional[bool] = None,
+        default: Optional[bool] = None,
+    ):
+        super(StrEnumParameter, self).__init__(id, build_str_enum_parser(values), validator, prompt, default)
 
 
 class ParamReader:
