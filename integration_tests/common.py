@@ -66,8 +66,4 @@ class TempDirectory:
 class BaseTapasTest(TestCase):
     @classmethod
     def setUpClass(cls):
-        run(["pip", "install", "."], cwd=project_root(), check=True)
-
-    @classmethod
-    def tearDownClass(cls):
-        run(["pip", "uninstall", "tapas"], cwd=project_root(), check=True)
+        run(["pip", "install", "-e", "."], cwd=project_root(), check=True)
