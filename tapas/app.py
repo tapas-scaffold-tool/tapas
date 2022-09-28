@@ -1,14 +1,9 @@
-from typing import Optional, List, Dict, Any
 import os
 import sys
-import json
 import pkg_resources
-from inspect import signature
-from encodings import utf_8
 from pathlib import Path
 from argparse import ArgumentParser
 
-from jinja2 import Environment, StrictUndefined
 from tabulate import tabulate
 
 from tapas.constants import UTF_8
@@ -23,15 +18,13 @@ from tapas.index import (
 )
 from tapas.loader import load_tapa
 from tapas.params import (
-    Parameter, ParamReader,
+    ParamReader,
 )
-from tapas.io import PromptProvider, PrintProvider, ConsolePromptProvider, ConsolePrintProvider
+from tapas.io import ConsolePromptProvider, ConsolePrintProvider
 from tapas.templater import Templater
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
-
-
 
 
 def parse_path(path: str) -> Path:
@@ -54,9 +47,7 @@ class App:
             self.prompt_provider,
             self.print_provider,
         )
-        self.templater = Templater(
-            self.print_provider
-        )
+        self.templater = Templater(self.print_provider)
 
     def run(self) -> int:
         if self.list:

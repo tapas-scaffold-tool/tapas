@@ -1,14 +1,10 @@
 import json
-from typing import (
-    Callable, Optional, TypeVar, Generic, List, Dict, Any
-)
+from typing import Callable, Optional, TypeVar, Generic, List, Dict, Any
 
 from rusty_results import Some, Result
 
 from tapas.io import PromptProvider, PrintProvider
-from tapas.parsers import (
-    int_parser, str_parser
-)
+from tapas.parsers import int_parser, str_parser
 
 T = TypeVar("T")
 
@@ -107,4 +103,3 @@ class ParamReader:
     @staticmethod
     def parse_json(json_string: str) -> Dict[str, Any]:
         return json.loads(json_string)
-

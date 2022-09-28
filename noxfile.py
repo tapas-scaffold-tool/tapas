@@ -28,10 +28,7 @@ def tests(session):
 
 @nox.session
 def style(session):
-    session.install("flake8", "black", "isort")
-
-    session.run("black", "--version")
-    session.run("black", "--check", "--target-version", "py38", "--line-length", f"{LINE_LENGTH}", *STYLE_TARGETS)
+    session.install("flake8", "black")
 
     session.run("flake8", "--version")
     session.run(
@@ -43,3 +40,6 @@ def style(session):
         "--show-source",
         *STYLE_TARGETS,
     )
+
+    session.run("black", "--version")
+    session.run("black", "--check", "--target-version", "py38", "--line-length", f"{LINE_LENGTH}", *STYLE_TARGETS)
