@@ -8,32 +8,7 @@ import requests
 from git import Repo
 
 
-TRUE_VALUES = {
-    "true",
-    "yes",
-    "y",
-}
 
-FALSE_VALUES = {
-    "false",
-    "no",
-    "n",
-}
-
-BOOL_VALUES = TRUE_VALUES.union(FALSE_VALUES)
-
-
-def prompt_bool(var_name: str, default_value: Any = None, prompt_string: str = None):
-    def bool_converter(value: str) -> Tuple[Optional[bool], Optional[str]]:
-        value = (value or "").strip().lower()
-        if value in TRUE_VALUES:
-            return True, None
-        elif value in FALSE_VALUES:
-            return False, None
-        else:
-            return None, f"Illegal boolean value {value}. Allowed values are: [{', '.join(BOOL_VALUES)}]"
-
-    return prompt(var_name, bool_converter, default_value, prompt_string)
 
 
 def prompt_enum(var_name: str, default_value: str = None, prompt_string: str = None, values: List[str] = None):

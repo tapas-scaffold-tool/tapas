@@ -45,6 +45,9 @@ setup(
         "tabulate~=0.8.7",
         "markupsafe==2.0.1",  # Fix cannot import name 'soft_unicode' from 'markupsafe'
     ],
+    tests_require=[
+        "parameterized",
+    ],
     packages=["tapas"],
     package_data={
         "tapas": [
