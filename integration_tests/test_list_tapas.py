@@ -18,7 +18,5 @@ class TapasHelpTest(BaseTapasTest):
 
         self.assertEqual(
             out,
-            "Tapa name    Description\n" +
-            "-----------  -------------\n" +
-            "test-tapa    Test tapa\n",
+            "Tapa name    Description\n" + "-----------  -------------\n" + "test-tapa    Test tapa\n",
         )
