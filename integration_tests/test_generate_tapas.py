@@ -200,3 +200,21 @@ class GenerateTapasTest(BaseTapasTest):
             license_file = target / "LICENSE"
 
             self.assertFalse(license_file.exists(), "License file should not be created")
+
+    def test_init_git_by_default(self):
+        tapa = get_test_tapas_dir() / "git"
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ["tapas", "dir:{}".format(str(tapa)), target],
+                input=pass_to_process(""),
+            )
+
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
+
+            target = Path(target)
+            git_dir = target / ".git"
+
+            self.assertTrue(git_dir.exists(), "Git directory was not created")
+            self.assertTrue(git_dir.is_dir(), "Git directory is not directory")
