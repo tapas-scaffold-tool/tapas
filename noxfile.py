@@ -22,6 +22,7 @@ FLAKE8_IGNORE = [
 def tests(session):
     session.install(".")
     session.install("pytest")
+    session.install("parameterized")
     session.run("pytest", "tests")
     session.run("pytest", "integration_tests")
 

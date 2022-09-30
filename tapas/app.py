@@ -1,9 +1,12 @@
 import os
 import sys
+from typing import Any, Dict
+
 import pkg_resources
 from pathlib import Path
 from argparse import ArgumentParser
 
+from rusty_results import Result, Err, Ok
 from tabulate import tabulate
 
 from tapas.constants import UTF_8
@@ -22,6 +25,9 @@ from tapas.params import (
 )
 from tapas.io import ConsolePromptProvider, ConsolePrintProvider
 from tapas.templater import Templater
+from tapas.tools.git import INIT_GIT_PARAMETER_ID, init_git_repo
+from tapas.tools.license import LICENSE_PARAMETER_ID, generate_license_file
+from tapas.util import DirectoryContext
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
@@ -65,38 +71,62 @@ class App:
         return 0
 
     def _apply_tapa(self) -> int:
+        result = self._resolve_tapa_dir()
+        if result.is_err:
+            self.print_provider.print(result.unwrap_err())
+            return 1
+
+        with DirectoryContext(self.target):
+            tapa_dir = result.unwrap()
+            get_params, post_init = load_tapa(tapa_dir / TAPA_FILE)
+            params_description = get_params() if get_params else {}
+            json_params = self.param_reader.parse_json(self.params) if self.params else {}
+            params = self.param_reader.read_params(params_description, json_params)
+
+            self.target.mkdir(parents=True, exist_ok=True)
+            code = self.templater.walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
+            if code:
+                return code
+
+            if post_init is not None:
+                code = post_init(params)
+                if code is None:
+                    code = 0
+            if code:
+                return code
+
+            code = self._perform_system_actions_if_needed(params)
+
+            return code
+
+    def _resolve_tapa_dir(self) -> Result[Path, str]:
         if self.tapa.schema is TapaSchema.INDEX:
             tapa_dir = find_tapa_in_index(self.index, self.tapa.location)
             if tapa_dir is None:
                 index_name = "default index" if self.index is DEFAULT_INDEX_LOCATION else f"index {self.index.location}"
-                self.print_provider.print(f'Tapa "{self.tapa.location}" not found in {index_name}')
-                return 1
+                return Err(f'Tapa "{self.tapa.location}" not found in {index_name}')
+            else:
+                return Ok(tapa_dir)
         elif self.tapa.schema is TapaSchema.GITHUB:
-            tapa_dir = load_tapa_from_gitthub(self.tapa.location)
+            return Ok(load_tapa_from_gitthub(self.tapa.location))
         elif self.tapa.schema is TapaSchema.DIRECTORY:
-            tapa_dir = parse_path(self.tapa.location)
+            return Ok(parse_path(self.tapa.location))
         else:
-            raise NotImplementedError(f"Not implemented for schema {self.tapa.schema}")
+            raise ValueError(f"Unknown schema {self.tapa.schema}")
 
-        get_params, post_init = load_tapa(tapa_dir / TAPA_FILE)
-        params_description = get_params() if get_params else {}
-        json_params = self.param_reader.parse_json(self.params) if self.params else {}
-        params = self.param_reader.read_params(params_description, json_params)
+    def _perform_system_actions_if_needed(self, params: Dict[str, Any]) -> int:
+        self.generate_license_if_needed(params)
+        self.init_git_if_needed(params)
+        return 0
 
-        self.target.mkdir(parents=True, exist_ok=True)
-        code = self.templater.walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
-        if code:
-            return code
+    def init_git_if_needed(self, params):
+        init_git = params.get(INIT_GIT_PARAMETER_ID)
+        if init_git:
+            init_git_repo()
 
-        if post_init is not None:
-            cwd = os.getcwd()
-            os.chdir(self.target)
-            code = post_init(params)
-            os.chdir(cwd)
-
-        if code is None:
-            code = 0
-        return code
+    def generate_license_if_needed(self, params):
+        license = params.get(LICENSE_PARAMETER_ID)
+        generate_license_file(license)
 
     @staticmethod
     def _load_version() -> str:

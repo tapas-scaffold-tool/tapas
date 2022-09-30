@@ -42,7 +42,7 @@ def pass_to_process(*args) -> bytes:
 
 
 def project_root() -> Path:
-    return Path(__file__).parents[1]
+    return Path(__file__).parents[1].resolve().absolute()
 
 
 def get_test_tapas_dir() -> Path:

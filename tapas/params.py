@@ -57,7 +57,7 @@ class BoolParameter(Parameter[bool]):
         self,
         id: str,
         validator: Optional[Callable[[bool], Some[str]]] = None,
-        prompt: Optional[bool] = None,
+        prompt: Optional[str] = None,
         default: Optional[bool] = None,
     ):
         super(BoolParameter, self).__init__(id, bool_parser, validator, prompt, default)
@@ -69,8 +69,8 @@ class StrEnumParameter(Parameter[str]):
         id: str,
         values: List[str],
         validator: Optional[Callable[[str], Some[str]]] = None,
-        prompt: Optional[bool] = None,
-        default: Optional[bool] = None,
+        prompt: Optional[str] = None,
+        default: Optional[str] = None,
     ):
         super(StrEnumParameter, self).__init__(id, build_str_enum_parser(values), validator, prompt, default)
 
