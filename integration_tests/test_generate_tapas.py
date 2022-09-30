@@ -163,3 +163,23 @@ class GenerateTapasTest(BaseTapasTest):
             self.assertTrue(file.is_file(), "File is not file")
 
             self.assertEqual("1\n", file.read_text(), "File content mismatch")
+
+    def test_generate_license(self):
+        tapa = get_test_tapas_dir() / "license"
+
+        with TempDirectory() as target:
+            code, out, err = communicate(
+                ["tapas", "dir:{}".format(str(tapa)), target],
+                input=pass_to_process("mit"),
+            )
+
+            self.assertEqual(0, code, "Exit code is not zero")
+            self.assertEqual(0, len(err), "Errors occurred")
+
+            target = Path(target)
+            license_file = target / "LICENSE"
+
+            self.assertTrue(license_file.exists(), "File was not created")
+            self.assertTrue(license_file.is_file(), "File is not file")
+
+            self.assertTrue(license_file.read_text().find("MIT License") != -1, "File content mismatch")
