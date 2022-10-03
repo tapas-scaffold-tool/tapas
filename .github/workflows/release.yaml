@@ -1,13 +1,13 @@
 name: Release app
 
 on:
-  workflow_run:
-    workflows: ["test"]
-    branches: ["master"]
-    types:
-      - completed
+  push:
+    branches:
+      - "master"
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
   publish:
     runs-on: ubuntu-latest
 
