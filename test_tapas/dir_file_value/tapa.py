@@ -1,7 +1,9 @@
-from tapas.tools import prompt_str
+from tapas.params import StrParameter
 
 
-def ask():
-    prompt_str("directory_name")
-    prompt_str("file_name")
-    prompt_str("value_in_file")
+def get_params():
+    return [
+        StrParameter("directory_name"),
+        StrParameter("file_name"),
+        StrParameter("value_in_file"),
+    ]

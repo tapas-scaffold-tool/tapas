@@ -1,17 +1,15 @@
-from typing import Tuple, Callable, Optional
 import os
 import sys
-import json
+from typing import Any, Dict
+
 import pkg_resources
-from inspect import Parameter, signature
-from encodings import utf_8
 from pathlib import Path
 from argparse import ArgumentParser
 
-from jinja2 import Environment, StrictUndefined
+from rusty_results import Result, Err, Ok
 from tabulate import tabulate
 
-from tapas.context import ContextHolder, PromptMode
+from tapas.constants import UTF_8
 from tapas.index import (
     find_tapa_in_index,
     load_tapas_index,
@@ -21,14 +19,18 @@ from tapas.index import (
     DEFAULT_INDEX_LOCATION,
     load_tapa_from_gitthub,
 )
+from tapas.loader import load_tapa
+from tapas.params import (
+    ParamReader,
+)
+from tapas.io import ConsolePromptProvider, ConsolePrintProvider
+from tapas.templater import Templater
+from tapas.tools.git import INIT_GIT_PARAMETER_ID, init_git_repo
+from tapas.tools.license import LICENSE_PARAMETER_ID, generate_license_file
+from tapas.util import DirectoryContext
 
 TAPA_FILE = "tapa.py"
 TEMPLATE_DIR = "template"
-
-ASK_FUNCTION = "ask"
-POST_INIT_FUNCTION = "post_init"
-
-UTF_8 = utf_8.getregentry().name
 
 
 def parse_path(path: str) -> Path:
@@ -44,6 +46,15 @@ class App:
         if not self.list and self.tapa is None:
             parser.error("Missing tapa name")
 
+        self.prompt_provider = ConsolePromptProvider()
+        self.print_provider = ConsolePrintProvider()
+
+        self.param_reader = ParamReader(
+            self.prompt_provider,
+            self.print_provider,
+        )
+        self.templater = Templater(self.print_provider)
+
     def run(self) -> int:
         if self.list:
             return self._show_available_tapas()
@@ -56,62 +67,66 @@ class App:
         for tapa_key in sorted(index.keys()):
             table.append([tapa_key, index[tapa_key].description])
 
-        print(tabulate(table, headers=["Tapa name", "Description"]))
+        self.print_provider.print(tabulate(table, headers=["Tapa name", "Description"]))
         return 0
 
     def _apply_tapa(self) -> int:
+        result = self._resolve_tapa_dir()
+        if result.is_err:
+            self.print_provider.print(result.unwrap_err())
+            return 1
+
+        with DirectoryContext(self.target):
+            tapa_dir = result.unwrap()
+            get_params, post_init = load_tapa(tapa_dir / TAPA_FILE)
+            params_description = get_params() if get_params else {}
+            json_params = self.param_reader.parse_json(self.params) if self.params else {}
+            params = self.param_reader.read_params(params_description, json_params)
+
+            self.target.mkdir(parents=True, exist_ok=True)
+            code = self.templater.walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
+            if code:
+                return code
+
+            if post_init is not None:
+                code = post_init(params)
+                if code is None:
+                    code = 0
+            if code:
+                return code
+
+            code = self._perform_system_actions_if_needed(params)
+
+            return code
+
+    def _resolve_tapa_dir(self) -> Result[Path, str]:
         if self.tapa.schema is TapaSchema.INDEX:
             tapa_dir = find_tapa_in_index(self.index, self.tapa.location)
             if tapa_dir is None:
                 index_name = "default index" if self.index is DEFAULT_INDEX_LOCATION else f"index {self.index.location}"
-                print(f'Tapa "{self.tapa.location}" not found in {index_name}')
-                return 1
+                return Err(f'Tapa "{self.tapa.location}" not found in {index_name}')
+            else:
+                return Ok(tapa_dir)
         elif self.tapa.schema is TapaSchema.GITHUB:
-            tapa_dir = load_tapa_from_gitthub(self.tapa.location)
+            return Ok(load_tapa_from_gitthub(self.tapa.location))
         elif self.tapa.schema is TapaSchema.DIRECTORY:
-            tapa_dir = parse_path(self.tapa.location)
+            return Ok(parse_path(self.tapa.location))
         else:
-            raise NotImplementedError(f"Not implemented for schema {self.tapa.schema}")
+            raise ValueError(f"Unknown schema {self.tapa.schema}")
 
-        ask, post_init = _load_tapa(tapa_dir / TAPA_FILE)
-        ContextHolder.init_context(prompt_mode=PromptMode.USER, values=_json_string_to_dict(self.params))
-        if ask is not None:
-            ask()
+    def _perform_system_actions_if_needed(self, params: Dict[str, Any]) -> int:
+        self.generate_license_if_needed(params)
+        self.init_git_if_needed(params)
+        return 0
 
-        params = ContextHolder.CONTEXT.dict
+    def init_git_if_needed(self, params):
+        init_git = params.get(INIT_GIT_PARAMETER_ID)
+        if init_git:
+            init_git_repo()
 
-        self.target.mkdir(parents=True, exist_ok=True)
-        code = _walk(tapa_dir / TEMPLATE_DIR, self.target, params, self.force)
-        if code:
-            return code
-
-        if post_init is not None:
-            sig = signature(post_init)
-
-            post_init_params = {}
-            for param in sig.parameters.values():
-                if param.kind == Parameter.VAR_KEYWORD:
-                    post_init_params = params
-                    break
-                elif param.kind in [Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY]:
-                    if param.name in params:
-                        post_init_params[param.name] = params[param.name]
-                    else:
-                        if param.default == Parameter.empty:
-                            raise Exception(
-                                "Post init function can contain only params asked in ask function or with default value"
-                            )
-                else:
-                    raise Exception("Post init function can contain only named params and **kwargs")
-
-            cwd = os.getcwd()
-            os.chdir(self.target)
-            code = post_init(**post_init_params)
-            os.chdir(cwd)
-
-        if code is None:
-            code = 0
-        return code
+    def generate_license_if_needed(self, params):
+        license = params.get(LICENSE_PARAMETER_ID)
+        generate_license_file(license)
 
     @staticmethod
     def _load_version() -> str:
@@ -139,62 +154,6 @@ class App:
             "target", type=parse_path, default=Path(os.getcwd()), nargs="?", help="target directory", metavar="TARGET"
         )
         return parser
-
-
-def _walk(template_dir: Path, destination_dir: Path, params: dict, force: bool) -> int:
-    if not template_dir.exists():
-        print(f'Incorrect tapa. Template dir "{template_dir}" not found.')
-        return 1
-
-    env = Environment(undefined=StrictUndefined)
-
-    for child in template_dir.glob("**/*"):
-        relative = child.relative_to(template_dir)
-
-        rendered = destination_dir / Path(*map(lambda p: env.from_string(p).render(params), relative.parts))
-
-        if child.is_dir():
-            rendered.mkdir(parents=True, exist_ok=True)
-        elif child.is_file():
-            # NB: Read such way to save \n in the end of file
-            text = ""
-            with open(child, "r", encoding=UTF_8) as f:
-                text = "".join(f.readlines())
-
-            content = env.from_string(text).render(params)
-
-            # NB: Fix \n at the end after rendering
-            if text.endswith("\n"):
-                content += "\n"
-
-            if rendered.exists() and not force:
-                print("File {} exists. Aborting.".format(rendered))
-                return 1
-            rendered.write_text(content, encoding=UTF_8)
-        else:
-            raise NotImplementedError()
-
-    return 0
-
-
-def _load_tapa(tapa_file_path: Path) -> Tuple[Optional[Callable], Optional[Callable]]:
-    if not tapa_file_path.exists():
-        return None, None
-
-    scope = {}
-    exec(tapa_file_path.read_text(encoding="utf-8"), scope)
-
-    ask = scope.get(ASK_FUNCTION, None)
-    post_init = scope.get(POST_INIT_FUNCTION, None)
-
-    return ask, post_init
-
-
-def _json_string_to_dict(json_string: Optional[str]) -> dict:
-    if json_string is None:
-        return {}
-    else:
-        return json.loads(json_string)
 
 
 def main():
