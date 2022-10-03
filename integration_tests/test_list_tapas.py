@@ -24,6 +24,5 @@ class TapasHelpTest(BaseTapasTest):
                 "Tapa name    Description",
                 "-----------  -------------",
                 "test-tapa    Test tapa",
-                "",
             ],
         )
