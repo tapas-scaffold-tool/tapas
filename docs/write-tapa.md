@@ -11,7 +11,7 @@ Link to repository [is here](https://github.com/tapas-scaffold-tool/tapa-tapa).
 
 ## Tapa structure
 
-Tapa consists of folowing parts:
+Tapa consists of following parts:
 
 - `template` directory
 - `tapa.py` file
@@ -25,6 +25,7 @@ You can substitute values into directory names, file names and file content.
 ## tapa.py structure
 
 Tapas reads two functions from `tapa.py` file:
+
 - `get_params`
 - `post_init`
 
