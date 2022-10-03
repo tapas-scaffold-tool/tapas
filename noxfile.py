@@ -4,9 +4,10 @@ import nox
 LINE_LENGTH = 120
 
 STYLE_TARGETS = [
-    "tapas",
     "integration_tests",
+    "tapas",
     "test_tapas",
+    "tests",
     "noxfile.py",
     "setup.py",
 ]

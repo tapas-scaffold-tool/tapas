@@ -9,9 +9,11 @@ from tests.utils import (
 
 class TestParamReader(TestCase):
     def test_read_params_from_prompt(self):
-        prompt = ListPromptProvider([
-            "test_value",
-        ])
+        prompt = ListPromptProvider(
+            [
+                "test_value",
+            ]
+        )
         print = SaveToListPrintProvider()
         param_reader = ParamReader(prompt, print)
 
@@ -76,5 +78,8 @@ class TestParamReader(TestCase):
         self.assertDictEqual(result, {"test.id": "good_value"})
         self.assertListEqual(
             print.get_values(),
-            ["Failed to parse value bad_value: Unknown value bad_value, allowed values are [another_value ,good_value]"],
+            [
+                "Failed to parse value bad_value: Unknown value bad_value, allowed values are "
+                + "[another_value ,good_value]"
+            ],
         )

@@ -32,5 +32,5 @@ class TestBoolParser(TestCase):
     def test_parse_failed(self):
         self.assertEqual(
             Err("Illegal boolean value badvalue. Allowed values are: [true, y, yes, false, n, no]"),
-            bool_parser("badvalue")
+            bool_parser("badvalue"),
         )

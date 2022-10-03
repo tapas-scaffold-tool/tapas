@@ -17,7 +17,7 @@ class ListPromptProvider(PromptProvider):
             self.next += 1
             return value
         else:
-            raise AssertionError(f"No more values in prompt")
+            raise AssertionError("No more values in prompt")
 
     def check_no_more_values(self):
         diff = len(self.values) - self.next
