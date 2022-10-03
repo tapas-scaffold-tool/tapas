@@ -16,8 +16,7 @@ class TapasHelpTest(BaseTapasTest):
         self.assertEqual(0, code, "Exit code is not zero")
         self.assertEqual(0, len(err), "Errors occurred")
 
-        out.replace("\r\n", "\n")
-        out = out.split("\n")
+        out = out.splitlines()  # Make Unix and Windows lines uniform
 
         self.assertListEqual(
             out,
