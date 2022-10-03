@@ -15,10 +15,6 @@ class TestIntParser(TestCase):
 
 
 class TestBoolParser(TestCase):
-    @staticmethod
-    def name_func_for_parse_bool_value(testcase_func, param_num, params):
-        return f"test_parse_{str(params[0][0]).lower()}_as_{str(params[0][1]).lower()}"
-
     @parameterized.expand(
         [
             ("TruE", True),
@@ -28,7 +24,7 @@ class TestBoolParser(TestCase):
             ("No", False),
             ("n", False),
         ],
-        name_func=name_func_for_parse_bool_value,
+        name_func=lambda _0, _1, params: f"test_parse_{str(params[0][0]).lower()}_as_{str(params[0][1]).lower()}",
     )
     def test_parse_bool_value(self, value, expected):
         self.assertEqual(Ok(expected), bool_parser(value))
