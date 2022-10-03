@@ -118,42 +118,39 @@ Enter value_in_file value: jkl
 Default value will be used in case of empty user input.
 
 
-### Tapas system params
+## Tapas system params
 
 Tapas has some special parameters to pass into returning environment.
-Those parameters can configure common behaviour for many 
-
-```python
-from tapas.tools import (
-    TAPAS_SYSTEM_PARAMS, 
-    TapasSystemParams,
-    prompt_license,
-)
-
-def ask() -> Dict:
-    env = {}
-    env[TAPAS_SYSTEM_PARAMS] = TapasSystemParams(
-        init_git_repo=True,
-        generate_license=prompt_license(),
-        exclude_template_files=[
-            "some_file_to_exclude.txt",
-        ]
-    )
-    return env
-```
-
-- `init_git_repo: bool` - init git repo after generating project
-
+Those parameters can configure prompt and actions for many common cases like license file generation or git repo init.
 
 ### Adding license file
 
 Tapas uses uses [lice](https://github.com/licenses/lice) to generate license file.
-To add license generation add license name as `generate_license` value or call prompt_license() to get one.
+To add license generation prompt add `TAPAS_SYSTEM_LICENSE_PARAMETER` to `get_params` function:
 
 ```python
-env[TAPAS_SYSTEM_PARAMS] = TapasSystemParams(
-    generate_license=prompt_license(),
-)
+from tapas.tools.license import TAPAS_SYSTEM_LICENSE_PARAMETER
+
+
+def get_params():
+    return [
+        TAPAS_SYSTEM_LICENSE_PARAMETER,
+    ]
+```
+
+### Init git repository
+
+Tapas can init git repository.
+To add init git repo prompt add `TAPAS_SYSTEM_INIT_GIT_PARAMETER` to `get_params` function: 
+
+```python
+from tapas.tools.git import TAPAS_SYSTEM_INIT_GIT_PARAMETER
+
+
+def get_params():
+    return [
+        TAPAS_SYSTEM_INIT_GIT_PARAMETER,
+    ]
 ```
 
 ## post_init function
