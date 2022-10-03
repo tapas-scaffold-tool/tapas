@@ -16,7 +16,15 @@ class TapasHelpTest(BaseTapasTest):
         self.assertEqual(0, code, "Exit code is not zero")
         self.assertEqual(0, len(err), "Errors occurred")
 
-        self.assertEqual(
+        out.replace("\r\n", "\n")
+        out = out.split("\n")
+
+        self.assertListEqual(
             out,
-            "Tapa name    Description\n" + "-----------  -------------\n" + "test-tapa    Test tapa\n",
+            [
+                "Tapa name    Description",
+                "-----------  -------------",
+                "test-tapa    Test tapa",
+                "",
+            ]
         )
