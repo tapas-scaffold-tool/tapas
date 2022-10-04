@@ -48,7 +48,12 @@ setup(
     tests_require=[
         "parameterized",
     ],
-    packages=find_packages(where="tapas"),
+    packages=find_packages(
+        include=[
+            "tapas",
+            "tapas.*",
+        ],
+    ),
     package_data={
         "tapas": [
             "tapas.version",
