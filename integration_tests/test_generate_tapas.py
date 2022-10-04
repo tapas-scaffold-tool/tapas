@@ -1,8 +1,11 @@
 from pathlib import Path
 
-from integration_tests.common import (
+from tapas.tools.tapas_integration_tests import (
     communicate,
     pass_to_process,
+)
+
+from integration_tests.common import (
     get_test_tapas_dir,
     TempDirectory,
     BaseTapasTest,

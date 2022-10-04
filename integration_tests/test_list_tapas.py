@@ -1,6 +1,7 @@
+from tapas.tools.tapas_integration_tests import communicate
+
 from integration_tests.common import (
     BaseTapasTest,
-    communicate,
     get_test_tapas_dir,
 )
 
