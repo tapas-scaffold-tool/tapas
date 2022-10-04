@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 from encodings import utf_8
 
@@ -48,7 +48,7 @@ setup(
     tests_require=[
         "parameterized",
     ],
-    packages=["tapas"],
+    packages=find_packages(where="tapas"),
     package_data={
         "tapas": [
             "tapas.version",
