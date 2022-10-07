@@ -29,7 +29,6 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
       - name: Tag
-        if: startsWith(github.ref, 'refs/heads/release/')
         run: |
           export TAG="v$(cat tapas/tapas.version)"
           git tag "${TAG}"
