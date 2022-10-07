@@ -21,7 +21,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install build
-          sudo apt install hub
       - name: Build package
         run: python -m build
 #      - name: Publish package
@@ -36,6 +35,6 @@ jobs:
           git push origin "${TAG}"
           echo "TAG=${TAG}" >> $GITHUB_ENV
       - name: Release on github
-        run: hub release create ${{ env.TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG }}
