@@ -21,7 +21,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install build
-          apt install hub
+          sudo apt install hub
       - name: Build package
         run: python -m build
 #      - name: Publish package
