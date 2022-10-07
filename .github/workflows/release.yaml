@@ -1,4 +1,4 @@
-name: Release app
+cname: Release app
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
       - "master"
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yaml
+#  test:
+#    uses: ./.github/workflows/test.yaml
   publish:
-    needs: [test]
+#    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,5 +28,11 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Tag
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          export TAG="v$(cat tapas/tapas.version)"
+          git tag "${TAG}"
+          git push origin "${TAG}"
       - name: Release on github
         uses: softprops/action-gh-release@v1
