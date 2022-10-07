@@ -34,6 +34,7 @@ jobs:
           export TAG="v$(cat tapas/tapas.version)"
           git tag "${TAG}"
           git push origin "${TAG}"
+          echo "TAG=${TAG}" >> $GITHUB_ENV
       - name: Release on github
         run: hub release create ${{ env.TAG }}
         env:
