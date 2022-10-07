@@ -34,6 +34,8 @@ jobs:
           git tag "${TAG}"
           git push origin "${TAG}"
       - name: Release on github
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ env.TAG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.TAG }}
+          draft: false
