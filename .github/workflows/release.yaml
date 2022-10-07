@@ -36,4 +36,4 @@ jobs:
       - name: Release on github
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: {{ env.TAG }}
+          tag_name: ${{ env.TAG }}
