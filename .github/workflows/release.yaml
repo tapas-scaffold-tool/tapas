@@ -35,3 +35,5 @@ jobs:
           git push origin "${TAG}"
       - name: Release on github
         uses: softprops/action-gh-release@v1
+        with:
+          tag_name: {{ env.TAG }}
